@@ -9,11 +9,13 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import sys
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(BASE_DIR / "apps"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,9 +29,21 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Add drf and jwt config
+rest_framework = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+# jwt setting
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,11 +52,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.users',
-'apps.vehicles',
-'apps.bookings',
-'apps.reviews',
+    'apps.vehicles',
+    'apps.bookings',
+    'apps.reviews',
+    'rest_framework',
 ]
 
+#middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
