@@ -25,4 +25,4 @@ class BookingViewSet(viewsets.ModelViewSet):
         )
 
         booking.status = "confirmed"
-        booking.save()
+        booking.save(update_fields=["status", "total_price"])
