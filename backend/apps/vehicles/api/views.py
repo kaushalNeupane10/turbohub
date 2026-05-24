@@ -7,12 +7,41 @@ from apps.bookings.models import Booking
 from datetime import datetime
 from rest_framework.exceptions import ValidationError
 from apps.common.permissions import IsOwnerOrReadOnly
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
 
 class VehicleViewSet(viewsets.ModelViewSet):
 
-    queryset = Vehicle.objects.all()
+    queryset = Vehicle.objects.select_related("owner").all()
     serializer_class = VehicleSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    filter_backends = [
+    DjangoFilterBackend,
+    SearchFilter,
+    OrderingFilter
+    ]
+
+    #filtering fields
+    filterset_fields = [
+    "brand",
+    "city",
+    "fuel_type",
+    ]
+
+    # Add search fields
+    search_fields = [
+    "title",
+    "brand",
+    "description",
+    ]
+
+    #ordering fileds
+    ordering_fields = [
+    "price_per_day",
+    "created_at",
+    ]
+    ordering = ["-created_at"]
 
     def perform_create(self, serializer):
         serializer.save(owner = self.request.user)
