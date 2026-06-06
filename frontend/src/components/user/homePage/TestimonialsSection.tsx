@@ -171,7 +171,7 @@ export default function TestimonialsSection() {
 
                 {/* Review */}
                 <blockquote className="text-sm italic leading-relaxed text-text-muted sm:text-base">
-                  "{testimonial.review}"
+                  &quot;{testimonial.review}&quot;
                 </blockquote>
               </div>
 
