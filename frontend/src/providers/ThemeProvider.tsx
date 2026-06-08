@@ -27,14 +27,22 @@ interface ThemeProviderProps {
 const STORAGE_KEY = "theme";
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") {
+      return "light";
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  });
 
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === "undefined") {
       return "system";
     }
 
-    return (localStorage.getItem(STORAGE_KEY) as Theme) ?? "system";
+    return (localStorage.getItem("theme") as Theme) ?? "system";
   });
 
   useEffect(() => {

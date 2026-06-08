@@ -138,7 +138,7 @@ export default function SideBar() {
   return (
     <>
       {/* Mobile Top Header */}
-      <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border-light bg-white/90 px-4 shadow-sm backdrop-blur-xl md:hidden">
+      <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-bg-surface/90 px-4 shadow-sm backdrop-blur-xl md:hidden">
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/images/logo/turboHub.png"
@@ -148,8 +148,8 @@ export default function SideBar() {
             className="rounded-full"
           />
 
-          <span className="text-sm font-extrabold text-primary-900">
-            Turbo <span className="text-secondary-500">Hub</span>
+          <span className="text-sm font-extrabold text-text-heading">
+            Turbo <span className="text-brand">Hub</span>
           </span>
         </Link>
 
@@ -158,7 +158,7 @@ export default function SideBar() {
           aria-label="Toggle sidebar"
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((prev) => !prev)}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-text-main transition hover:bg-gray-100 active:scale-95"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-text-body transition hover:bg-bg-elevated active:scale-95"
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
@@ -174,7 +174,7 @@ export default function SideBar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-overlay backdrop-blur-sm md:hidden"
           />
         )}
       </AnimatePresence>
@@ -192,21 +192,21 @@ export default function SideBar() {
         }}
         className={`
           fixed left-0 top-0 z-50 flex h-screen flex-col overflow-x-hidden
-          border-r border-border-light bg-white/95 shadow-[var(--shadow-nav)]
+          border-r border-border bg-bg-surface/95 shadow-[var(--shadow-nav)]
           backdrop-blur-xl select-none transition-transform duration-300
           md:sticky md:translate-x-0
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         {/* Logo Section */}
-        <div className="flex h-16 shrink-0 items-center border-b border-gray-100 px-4">
+        <div className="flex h-16 shrink-0 items-center border-b border-border-subtle px-4">
           <Link
             href="/"
             className={`flex w-full min-w-0 items-center ${
               isCollapsed ? "justify-center" : "gap-3"
             }`}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50">
               <Image
                 src="/images/logo/turboHub.png"
                 alt="turboHub Logo"
@@ -225,8 +225,8 @@ export default function SideBar() {
                   transition={{ duration: 0.15 }}
                   className="min-w-0 overflow-hidden whitespace-nowrap"
                 >
-                  <h2 className="text-base font-extrabold leading-tight text-primary-900">
-                    Turbo <span className="text-secondary-500">Hub</span>
+                  <h2 className="text-base font-extrabold leading-tight text-text-heading">
+                    Turbo <span className="text-brand">Hub</span>
                   </h2>
                   <p className="text-xs font-medium text-text-muted">
                     Admin Panel
@@ -264,8 +264,8 @@ export default function SideBar() {
                       transition-all duration-200
                       ${
                         isActive
-                          ? "bg-primary text-white shadow-md shadow-primary-100"
-                          : "text-primary-700 hover:bg-primary-50 hover:text-primary"
+                          ? "bg-brand text-brand-foreground shadow-brand"
+                          : "text-text-body hover:bg-bg-elevated hover:text-brand"
                       }
                       ${isCollapsed ? "justify-center" : "gap-3"}
                     `}
@@ -274,7 +274,7 @@ export default function SideBar() {
                       size={20}
                       className={`
                         shrink-0 transition-transform duration-200 group-hover:scale-105
-                        ${isActive ? "text-white" : "text-primary-600"}
+                        ${isActive ? "text-brand-foreground" : "text-brand-600"}
                       `}
                     />
 
@@ -309,9 +309,8 @@ export default function SideBar() {
                       )}
                     </AnimatePresence>
 
-                    {/* Tooltip when collapsed */}
                     {isCollapsed && (
-                      <span className="pointer-events-none absolute left-[68px] z-50 scale-95 rounded-lg bg-primary-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-all group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
+                      <span className="pointer-events-none absolute left-[68px] z-50 scale-95 rounded-lg bg-brand-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-all group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
                         {item.name}
                       </span>
                     )}
@@ -325,8 +324,8 @@ export default function SideBar() {
                       transition-all duration-200
                       ${
                         isActive
-                          ? "bg-primary text-white shadow-md shadow-primary-100"
-                          : "text-primary-700 hover:bg-primary-50 hover:text-primary"
+                          ? "bg-brand text-brand-foreground shadow-brand"
+                          : "text-text-body hover:bg-bg-elevated hover:text-brand"
                       }
                       ${isCollapsed ? "justify-center" : "gap-3"}
                     `}
@@ -335,7 +334,7 @@ export default function SideBar() {
                       size={20}
                       className={`
                         shrink-0 transition-transform duration-200 group-hover:scale-105
-                        ${isActive ? "text-white" : "text-primary-600"}
+                        ${isActive ? "text-brand-foreground" : "text-brand-600"}
                       `}
                     />
 
@@ -353,9 +352,8 @@ export default function SideBar() {
                       )}
                     </AnimatePresence>
 
-                    {/* Tooltip when collapsed */}
                     {isCollapsed && (
-                      <span className="pointer-events-none absolute left-[68px] z-50 scale-95 rounded-lg bg-primary-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-all group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
+                      <span className="pointer-events-none absolute left-[68px] z-50 scale-95 rounded-lg bg-brand-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-all group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
                         {item.name}
                       </span>
                     )}
@@ -376,7 +374,7 @@ export default function SideBar() {
                       }}
                       className="mt-1 overflow-hidden pl-3"
                     >
-                      <div className="ml-4 space-y-1 border-l border-primary-100 pl-3">
+                      <div className="ml-4 space-y-1 border-l border-border-subtle pl-3">
                         {item.children?.map((sub) => {
                           const SubIcon = sub.icon || CircleDot;
                           const isSubActive = isPathActive(sub.href);
@@ -391,8 +389,8 @@ export default function SideBar() {
                                 transition-all duration-200
                                 ${
                                   isSubActive
-                                    ? "bg-primary-50 text-primary"
-                                    : "text-text-muted hover:bg-gray-50 hover:text-primary"
+                                    ? "bg-brand-50 text-brand"
+                                    : "text-text-muted hover:bg-bg-elevated hover:text-brand"
                                 }
                               `}
                             >
@@ -402,8 +400,8 @@ export default function SideBar() {
                                   shrink-0 transition-transform duration-200 group-hover:scale-105
                                   ${
                                     isSubActive
-                                      ? "text-primary"
-                                      : "text-primary-500"
+                                      ? "text-brand"
+                                      : "text-brand-500"
                                   }
                                 `}
                               />
@@ -411,7 +409,7 @@ export default function SideBar() {
                               <span className="truncate">{sub.name}</span>
 
                               {isSubActive && (
-                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" />
                               )}
                             </Link>
                           );
@@ -426,13 +424,13 @@ export default function SideBar() {
         </nav>
 
         {/* Bottom Actions */}
-        <div className="shrink-0 border-t border-gray-100 p-3">
+        <div className="shrink-0 border-t border-border-subtle p-3">
           <button
             type="button"
             onClick={() => setIsCollapsed((prev) => !prev)}
             className={`
               mb-2 hidden w-full items-center rounded-xl px-3 py-2.5 text-sm font-bold
-              text-text-muted transition hover:bg-gray-50 hover:text-primary-700 md:flex
+              text-text-muted transition hover:bg-bg-elevated hover:text-brand md:flex
               ${isCollapsed ? "justify-center" : "gap-3"}
             `}
           >

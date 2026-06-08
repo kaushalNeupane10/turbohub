@@ -27,8 +27,31 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  try {
+    const storedTheme = localStorage.getItem('theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    const theme =
+      storedTheme === 'dark' ||
+      (storedTheme === 'system' && systemDark)
+        ? 'dark'
+        : 'light';
+
+    document.documentElement.classList.add(theme);
+  } catch (e) {}
+})();
+`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         <AuthProvider>
           <ThemeProvider>
