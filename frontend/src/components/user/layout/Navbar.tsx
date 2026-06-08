@@ -2,22 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import ThemeToggle from "@/components/common/ThemeToggle";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen((prev) => !prev);
-  };
-
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => !prev);
-
-    if (typeof window !== "undefined") {
-      document.documentElement.classList.toggle("dark");
-    }
   };
 
   const navLinks = [
@@ -34,7 +26,7 @@ export default function Navbar() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand to-accent-light flex items-center justify-center text-brand-foreground font-black text-xl shadow-brand">
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand to-accent-light flex items-center justify-center text-brand-foreground font-black text-xl shadow-brand">
             T
           </div>
 
@@ -65,18 +57,7 @@ export default function Navbar() {
         {/* Actions */}
         <div className="flex items-center gap-3">
           {/* Theme Toggle */}
-          <button
-            type="button"
-            onClick={toggleDarkMode}
-            className="p-2.5 rounded-lg bg-bg-elevated border border-border/60 text-text-body hover:text-brand hover:border-brand/40 hover:shadow-brand transition-all"
-            aria-label="Toggle Theme"
-          >
-            {darkMode ? (
-              <Sun size={18} />
-            ) : (
-              <Moon size={18} />
-            )}
-          </button>
+          <ThemeToggle />
 
           {/* CTA */}
           <a
@@ -93,11 +74,7 @@ export default function Navbar() {
             className="md:hidden p-2.5 rounded-lg bg-bg-elevated border border-border/60 text-text-body hover:text-brand transition-all"
             aria-label="Toggle Menu"
           >
-            {mobileMenuOpen ? (
-              <X size={20} />
-            ) : (
-              <Menu size={20} />
-            )}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -106,7 +83,7 @@ export default function Navbar() {
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
           mobileMenuOpen
-            ? "max-h-[500px] border-b border-border bg-bg-surface"
+            ? "max-h-125 border-b border-border bg-bg-surface"
             : "max-h-0"
         }`}
       >

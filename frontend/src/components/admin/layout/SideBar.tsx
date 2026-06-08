@@ -141,15 +141,15 @@ export default function SideBar() {
       <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border-light bg-white/90 px-4 shadow-sm backdrop-blur-xl md:hidden">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/images/logo/sanchonepal.png"
-            alt="Sancho Nepal Logo"
+            src="/images/logo/turboHub.png"
+            alt="turboHub Logo"
             width={34}
             height={34}
             className="rounded-full"
           />
 
           <span className="text-sm font-extrabold text-primary-900">
-            Sancho <span className="text-secondary-500">Nepal</span>
+            Turbo <span className="text-secondary-500">Hub</span>
           </span>
         </Link>
 
@@ -208,8 +208,8 @@ export default function SideBar() {
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50">
               <Image
-                src="/images/logo/sanchonepal.png"
-                alt="Sancho Nepal Logo"
+                src="/images/logo/turboHub.png"
+                alt="turboHub Logo"
                 width={30}
                 height={30}
                 className="rounded-full"
@@ -226,7 +226,7 @@ export default function SideBar() {
                   className="min-w-0 overflow-hidden whitespace-nowrap"
                 >
                   <h2 className="text-base font-extrabold leading-tight text-primary-900">
-                    Sancho <span className="text-secondary-500">Nepal</span>
+                    Turbo <span className="text-secondary-500">Hub</span>
                   </h2>
                   <p className="text-xs font-medium text-text-muted">
                     Admin Panel
