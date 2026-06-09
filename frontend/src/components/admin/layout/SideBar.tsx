@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import SignOutBtn from "./SignOutBtn";
+import ThemeToggle from "@/components/common/ThemeToggle";
 
 interface MenuChild {
   name: string;
@@ -140,13 +141,9 @@ export default function SideBar() {
       {/* Mobile Top Header */}
       <header className="fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-bg-surface/90 px-4 shadow-sm backdrop-blur-xl md:hidden">
         <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/images/logo/turboHub.png"
-            alt="turboHub Logo"
-            width={34}
-            height={34}
-            className="rounded-full"
-          />
+          <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand to-accent-light flex items-center justify-center text-brand-foreground font-black text-xl shadow-brand">
+            T
+          </div>
 
           <span className="text-sm font-extrabold text-text-heading">
             Turbo <span className="text-brand">Hub</span>
@@ -207,13 +204,9 @@ export default function SideBar() {
             }`}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50">
-              <Image
-                src="/images/logo/turboHub.png"
-                alt="turboHub Logo"
-                width={30}
-                height={30}
-                className="rounded-full"
-              />
+              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand to-accent-light flex items-center justify-center text-brand-foreground font-black text-xl shadow-brand">
+                T
+              </div>
             </div>
 
             <AnimatePresence mode="wait">
@@ -234,6 +227,7 @@ export default function SideBar() {
                 </motion.div>
               )}
             </AnimatePresence>
+            <ThemeToggle />
           </Link>
         </div>
 
