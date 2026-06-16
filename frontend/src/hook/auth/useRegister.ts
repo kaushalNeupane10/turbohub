@@ -10,7 +10,7 @@ import { registerSchema } from "@/validation/auth.validation";
 type RegisterErrors = Partial<Record<keyof RegisterData, string>>;
 
 const initialFormData: RegisterData = {
-  name: "",
+  full_name: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -81,11 +81,19 @@ export default function useRegister() {
     } catch (err) {
       const apiError = err as ApiError;
 
-      setServerError(apiError.message);
+      if (apiError.errors) {
+        const fieldErrors: RegisterErrors = {};
 
-      setError({
-        email: apiError.message,
-      });
+        Object.entries(apiError.errors).forEach(([key, value]) => {
+          if (key in initialFormData) {
+            fieldErrors[key as keyof RegisterData] = value[0];
+          }
+        });
+
+        setError(fieldErrors);
+      } else {
+        setServerError(apiError.message);
+      }
 
       return null;
     } finally {

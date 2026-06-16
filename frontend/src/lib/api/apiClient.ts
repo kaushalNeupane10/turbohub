@@ -2,7 +2,12 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
 
 export interface ApiError extends Error {
   status?: number;
+
   errors?: Record<string, string[]>;
+
+  response?: {
+    data?: Record<string, string[] | string>;
+  };
 }
 
 interface ErrorResponse {
@@ -37,15 +42,19 @@ api.interceptors.response.use(
   },
 
   (error: AxiosError<ErrorResponse>) => {
+    const responseData = error.response?.data;
+
     const apiError: ApiError = new Error(
-      error.response?.data?.message ||
-        error.response?.data?.detail ||
+      responseData?.message ||
+        responseData?.detail ||
         error.message ||
         "Network Error",
     );
 
     apiError.status = error.response?.status;
-    apiError.errors = error.response?.data?.errors;
+
+    apiError.errors =
+      responseData?.errors || (responseData as Record<string, string[]>);
 
     return Promise.reject(apiError);
   },

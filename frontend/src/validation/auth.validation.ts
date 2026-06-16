@@ -14,7 +14,7 @@ export type LoginSchema = z.infer<typeof loginSchema>;
 // register schema
 export const registerSchema = z
   .object({
-    name: z
+    full_name: z
       .string()
       .trim()
       .min(2, "Name must be at least 2 characters")

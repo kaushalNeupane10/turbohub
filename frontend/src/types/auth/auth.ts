@@ -4,7 +4,7 @@ export interface User {
   first_name: string;
   last_name: string;
   avatar?: string | null;
-  role?: string;
+  role: string;
 }
 
 export interface LoginData {
@@ -13,8 +13,12 @@ export interface LoginData {
 }
 
 export interface RegisterData {
-  name: string;
+  full_name: string;
   email: string;
   password: string;
   confirmPassword: string;
 }
+
+export type AuthError = {
+  [key: string]: string;
+};

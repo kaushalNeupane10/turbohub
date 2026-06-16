@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api/apiClient";
 import { User } from "@/types/auth/auth";
+import { getRedirectPath } from "@/utils/auth";
 
 interface AuthContextType {
   user: User | null;
@@ -75,9 +76,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     verifyToken();
   }, [verifyToken]);
 
-  const login = useCallback((userData: User) => {
-    setUser(userData);
-  }, []);
+  const login = useCallback(
+    (userData: User) => {
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      router.push(getRedirectPath(userData.role));
+    },
+    [router, user],
+  );
 
   const logout = useCallback(async () => {
     try {
