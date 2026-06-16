@@ -21,7 +21,6 @@ export default function useRegister() {
 
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-
   const [error, setError] = useState<RegisterErrors>({});
   const [formData, setFormData] = useState<RegisterData>(initialFormData);
 
@@ -81,7 +80,7 @@ export default function useRegister() {
     } catch (err) {
       const apiError = err as ApiError;
 
-      if (apiError.errors) {
+      if (apiError.errors && Object.keys(apiError.errors).length > 0) {
         const fieldErrors: RegisterErrors = {};
 
         Object.entries(apiError.errors).forEach(([key, value]) => {
@@ -94,7 +93,6 @@ export default function useRegister() {
       } else {
         setServerError(apiError.message);
       }
-
       return null;
     } finally {
       setLoading(false);

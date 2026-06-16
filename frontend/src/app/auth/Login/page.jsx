@@ -1,5 +1,9 @@
-import React from "react";
-
 export default function page() {
-  return <div></div>;
+  return (
+    <main className="min-h-screen bg-bg-page flex items-center justify-center py-12">
+      <div className="mx-auto w-full max-w-120 px-4 sm:px-6">
+        <LoginForm />
+      </div>
+    </main>
+  );
 }

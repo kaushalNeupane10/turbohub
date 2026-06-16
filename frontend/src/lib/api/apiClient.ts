@@ -53,8 +53,9 @@ api.interceptors.response.use(
 
     apiError.status = error.response?.status;
 
-    apiError.errors =
-      responseData?.errors || (responseData as Record<string, string[]>);
+    if (responseData?.errors && typeof responseData.errors === "object") {
+      apiError.errors = responseData.errors;
+    }
 
     return Promise.reject(apiError);
   },
