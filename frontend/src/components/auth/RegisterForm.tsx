@@ -1,7 +1,9 @@
 "use client";
 
 import useRegister from "@/hook/auth/useRegister";
-import { Loader2 } from "lucide-react";
+import Input from "../ui/Input";
+import Button from "../ui/Button";
+
 export default function RegisterForm() {
   const { loading, error, serverError, formData, updateField, handleRegister } =
     useRegister();
@@ -17,145 +19,116 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="w-full rounded-2xl border border-border-subtle bg-bg-surface p-6 shadow-lg sm:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-heading">Create Account</h1>
+    <div className="w-full rounded-2xl border border-border-subtle bg-bg-surface p-6 shadow-xl transition-all duration-300 hover:shadow-brand sm:p-8">
+      {/* TurboHub Branding & Header */}
+      <div className="mb-7">
+        <div className="inline-flex items-center gap-2 mb-3">
+          {/* Micro vector brand mark representing speed/motion */}
+          <svg
+            className="h-5 w-5 text-brand"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2.5"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+            />
+          </svg>
+          <span className="font-sans text-lg font-black tracking-wider text-text-heading uppercase">
+            Turbo<span className="text-brand">Hub</span>
+          </span>
+        </div>
 
-        <p className="mt-2 text-sm text-text-muted">
-          Create your account to get started.
+        <h1 className="text-2xl font-bold tracking-tight text-text-heading sm:text-3xl">
+          Create Account
+        </h1>
+        <p className="mt-1.5 text-sm text-text-muted text-pretty">
+          Get started with TurboHub to find your perfect ride.
         </p>
       </div>
 
+      {/* Clean Server Error Alert Box */}
       {serverError && (
-        <div className="mb-6 rounded-lg border border-error bg-error-light/10 p-3 text-sm text-error">
-          {serverError}
+        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-error bg-error-light/10 p-3.5 text-sm text-error transition-all duration-200">
+          <svg
+            className="h-5 w-5 shrink-0 mt-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <span className="font-medium">{serverError}</span>
         </div>
       )}
 
+      {/* Form Fields Stack */}
       <form onSubmit={onSubmit} className="space-y-5">
         {/* Name */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-text-body">
-            Full Name
-          </label>
-
-          <input
-            value={formData.full_name}
-            onChange={(e) => updateField("full_name", e.target.value)}
-            placeholder="John Doe"
-            className={`w-full rounded-lg border bg-bg-surface px-4 py-3 outline-none transition
-              ${
-                error.full_name
-                  ? "border-error"
-                  : "border-border focus:border-border-focus"
-              }
-            `}
-          />
-
-          {error.full_name && (
-            <p className="mt-1 text-sm text-error">{error.full_name}</p>
-          )}
-        </div>
+        <Input
+          label="Full Name"
+          value={formData.full_name}
+          onChange={(e) => updateField("full_name", e.target.value)}
+          placeholder="John Doe"
+          error={error.full_name}
+        />
 
         {/* Email */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-text-body">
-            Email Address
-          </label>
-
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => updateField("email", e.target.value)}
-            placeholder="john@example.com"
-            className={`w-full rounded-lg border bg-bg-surface px-4 py-3 outline-none transition
-              ${
-                error.email
-                  ? "border-error"
-                  : "border-border focus:border-border-focus"
-              }
-            `}
-          />
-
-          {error.email && (
-            <p className="mt-1 text-sm text-error">{error.email}</p>
-          )}
-        </div>
+        <Input
+          label="Email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => updateField("email", e.target.value)}
+          placeholder="john@example.com"
+          error={error.email}
+        />
 
         {/* Password */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-text-body">
-            Password
-          </label>
-
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => updateField("password", e.target.value)}
-            placeholder="••••••••"
-            className={`w-full rounded-lg border bg-bg-surface px-4 py-3 outline-none transition
-              ${
-                error.password
-                  ? "border-error"
-                  : "border-border focus:border-border-focus"
-              }
-            `}
-          />
-
-          {error.password && (
-            <p className="mt-1 text-sm text-error">{error.password}</p>
-          )}
-        </div>
+        <Input
+          label="Password"
+          type="password"
+          value={formData.password}
+          onChange={(e) => updateField("password", e.target.value)}
+          placeholder="••••••••"
+          error={error.password}
+        />
 
         {/* Confirm Password */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-text-body">
-            Confirm Password
-          </label>
+        <Input
+          label="Confirm Password"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={(e) => updateField("confirmPassword", e.target.value)}
+          placeholder="••••••••"
+          error={error.confirmPassword}
+        />
 
-          <input
-            type="password"
-            value={formData.confirmPassword}
-            onChange={(e) => updateField("confirmPassword", e.target.value)}
-            placeholder="••••••••"
-            className={`w-full rounded-lg border bg-bg-surface px-4 py-3 outline-none transition
-              ${
-                error.confirmPassword
-                  ? "border-error"
-                  : "border-border focus:border-border-focus"
-              }
-            `}
-          />
-
-          {error.confirmPassword && (
-            <p className="mt-1 text-sm text-error">{error.confirmPassword}</p>
-          )}
+        {/* Action Button Container */}
+        <div className="pt-1">
+          <Button type="submit" loading={loading}>
+            Create Account
+          </Button>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="
-            w-full rounded-lg
-            bg-brand
-            px-4 py-3
-            font-medium
-            text-brand-foreground
-            transition
-            hover:bg-brand-dark
-            disabled:cursor-not-allowed
-            disabled:opacity-60
-          "
-        >
-          {loading ? (
-            <div className="flex justify-center">
-              <Loader2 className="h-5 w-5 animate-spin" />
-            </div>
-          ) : (
-            "Create Account"
-          )}
-        </button>
       </form>
+
+      {/* Secondary Quick-Link Option */}
+      <div className="mt-6 text-center text-sm text-text-muted">
+        Already have an account?{" "}
+        <a
+          href="/auth/login"
+          className="font-medium text-brand hover:text-brand-dark transition-colors underline underline-offset-4"
+        >
+          Sign in
+        </a>
+      </div>
     </div>
   );
 }
