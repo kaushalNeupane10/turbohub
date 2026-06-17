@@ -85,7 +85,9 @@ export default function useRegister() {
 
         Object.entries(apiError.errors).forEach(([key, value]) => {
           if (key in initialFormData) {
-            fieldErrors[key as keyof RegisterData] = value[0];
+            fieldErrors[key as keyof RegisterData] = Array.isArray(value)
+              ? value[0]
+              : value;
           }
         });
 

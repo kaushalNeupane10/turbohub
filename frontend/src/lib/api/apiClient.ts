@@ -4,27 +4,53 @@ export interface ApiError extends Error {
   status?: number;
 
   errors?: Record<string, string[]>;
-
-  response?: {
-    data?: Record<string, string[] | string>;
-  };
 }
 
-interface ErrorResponse {
+interface BackendErrorResponse {
   message?: string;
+
   detail?: string;
+
   errors?: Record<string, string[]>;
+
+  [key: string]: unknown;
 }
 
 const api: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+
   timeout: 10000,
+
   withCredentials: true,
+
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
+
+function normalizeErrors(data: BackendErrorResponse): Record<string, string[]> {
+  // Case:
+  // {
+  //   errors:{
+  //      email:["already exists"]
+  //   }
+  // }
+
+  if (data.errors) {
+    return data.errors;
+  }
+
+  const fieldErrors: Record<string, string[]> = {};
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      fieldErrors[key] = value;
+    }
+  });
+
+  return fieldErrors;
+}
 
 api.interceptors.response.use(
   (response) => {
@@ -41,7 +67,7 @@ api.interceptors.response.use(
     return data?.data ?? data;
   },
 
-  (error: AxiosError<ErrorResponse>) => {
+  (error: AxiosError<BackendErrorResponse>) => {
     const responseData = error.response?.data;
 
     const apiError: ApiError = new Error(
@@ -53,8 +79,8 @@ api.interceptors.response.use(
 
     apiError.status = error.response?.status;
 
-    if (responseData?.errors && typeof responseData.errors === "object") {
-      apiError.errors = responseData.errors;
+    if (responseData) {
+      apiError.errors = normalizeErrors(responseData);
     }
 
     return Promise.reject(apiError);
@@ -63,13 +89,13 @@ api.interceptors.response.use(
 
 export async function apiClient<T>(
   url: string,
+
   config?: AxiosRequestConfig,
 ): Promise<T> {
   return api(url, config);
 }
 
 export default api;
-
 export function buildUrl(
   path: string,
   params?: Record<string, string | number | boolean | undefined | null>,
