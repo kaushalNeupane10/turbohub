@@ -4,6 +4,7 @@ import useRegister from "@/hook/auth/useRegister";
 import Input from "../ui/formFields/Input";
 import Button from "../ui/formFields/Button";
 import { Alert } from "@/components/ui/alert";
+import Link from "next/link";
 
 export default function RegisterForm() {
   const { loading, error, serverError, formData, updateField, handleRegister } =
@@ -12,11 +13,7 @@ export default function RegisterForm() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const user = await handleRegister();
-
-    if (user) {
-      console.log("Registered", user);
-    }
+    await handleRegister();
   };
 
   return (
@@ -110,12 +107,12 @@ export default function RegisterForm() {
       {/* Secondary Quick-Link Option */}
       <div className="mt-6 text-center text-sm text-text-muted">
         Already have an account?{" "}
-        <a
+        <Link
           href="/auth/login"
           className="font-medium text-brand hover:text-brand-dark transition-colors underline underline-offset-4"
         >
           Sign in
-        </a>
+        </Link>
       </div>
     </div>
   );
