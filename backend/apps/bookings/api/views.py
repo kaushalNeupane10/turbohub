@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions
 from apps.bookings.models import Booking
 from .serializers import BookingSerializer
-from apps.common.permissions import IsBookingOwner
+from .permissions import IsBookingOwner
 
 class BookingViewSet(viewsets.ModelViewSet):
 

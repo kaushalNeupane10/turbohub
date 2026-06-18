@@ -82,7 +82,9 @@ export default function useLogin() {
 
         Object.entries(apiError.errors).forEach(([key, value]) => {
           if (key in initialFormData) {
-            fieldErrors[key as keyof LoginData] = value[0];
+            fieldErrors[key as keyof LoginData] = Array.isArray(value)
+              ? value[0]
+              : value;
           }
         });
 

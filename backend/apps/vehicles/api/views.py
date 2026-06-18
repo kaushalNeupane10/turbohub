@@ -4,91 +4,164 @@ from .serializers import VehicleSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.bookings.models import Booking
-from datetime import datetime
 from rest_framework.exceptions import ValidationError
-from apps.common.permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from django.utils.dateparse import parse_date
+
 
 class VehicleViewSet(viewsets.ModelViewSet):
 
     queryset = Vehicle.objects.select_related("owner").all()
+
     serializer_class = VehicleSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly
+    ]
+
 
     filter_backends = [
-    DjangoFilterBackend,
-    SearchFilter,
-    OrderingFilter
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter
     ]
 
-    #filtering fields
+
     filterset_fields = [
-    "brand",
-    "city",
-    "fuel_type",
+        "vehicle_type",
+        "location",
+        "status",
     ]
 
-    # Add search fields
+
     search_fields = [
-    "title",
-    "brand",
-    "description",
+        "name",
+        "description",
+        "location",
     ]
 
-    #ordering fileds
+
     ordering_fields = [
-    "price_per_day",
-    "created_at",
+        "price_per_day",
+        "created_at",
     ]
-    ordering = ["-created_at"]
+
+
+    ordering = [
+        "-created_at"
+    ]
+
 
     def perform_create(self, serializer):
-        serializer.save(owner = self.request.user)
 
-    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
+        serializer.save(
+            owner=self.request.user
+        )
+
+
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[permissions.IsAuthenticated]
+    )
+    def my_vehicles(self, request):
+
+        vehicles = Vehicle.objects.filter(
+            owner=request.user
+        )
+
+        serializer = self.get_serializer(
+            vehicles,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+
+
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[permissions.AllowAny]
+    )
     def availability(self, request, pk=None):
+
         vehicle = self.get_object()
 
-        start = request.query_params.get("start_date")
-        end = request.query_params.get("end_date")
 
-        #  Validate input
+        start = request.query_params.get(
+            "start_date"
+        )
+
+        end = request.query_params.get(
+            "end_date"
+        )
+
+
         if start and end:
-            try:
-                start_date = datetime.strptime(start, "%Y-%m-%d").date()
-                end_date = datetime.strptime(end, "%Y-%m-%d").date()
-            except ValueError:
-                raise ValidationError("Invalid date format. Use YYYY-MM-DD")
+
+            start_date = parse_date(start)
+
+            end_date = parse_date(end)
+
+
+            if not start_date or not end_date:
+
+                raise ValidationError(
+                    "Invalid date format. Use YYYY-MM-DD"
+                )
+
 
             if start_date >= end_date:
-                raise ValidationError("End date must be after start date")
 
-            #  Conflict check
+                raise ValidationError(
+                    "End date must be after start date"
+                )
+
+
             conflict = Booking.objects.filter(
+
                 vehicle=vehicle,
+
                 start_date__lt=end_date,
+
                 end_date__gt=start_date,
+
                 status="confirmed"
+
             ).exists()
 
-            return Response({
-                "available": not conflict
-            })
 
-        #  Return all booked slots
+            return Response(
+                {
+                    "available": not conflict
+                }
+            )
+
+
         bookings = Booking.objects.filter(
+
             vehicle=vehicle,
+
             status="confirmed"
-        ).only("start_date", "end_date")  # optimization
+
+        ).only(
+            "start_date",
+            "end_date"
+        )
+
 
         data = [
             {
-                "start_date": b.start_date,
-                "end_date": b.end_date
+                "start_date": booking.start_date,
+                "end_date": booking.end_date
             }
-            for b in bookings
+
+            for booking in bookings
         ]
 
-        return Response(data)
 
+        return Response(data)
