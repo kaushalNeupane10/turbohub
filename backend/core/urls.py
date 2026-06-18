@@ -20,4 +20,7 @@ urlpatterns = [
 
      # auth
     path('api/auth/', include('apps.users.api.urls')),
+
+    # payments
+    path("api/payments/", include("apps.payments.api.urls")),
 ]
