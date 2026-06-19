@@ -16,6 +16,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "user",
             "amount",
-            "status",
+            "currency",
             "transaction_id",
+            "status",
+            "failure_reason",
         ]

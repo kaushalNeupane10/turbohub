@@ -8,11 +8,18 @@ User = settings.AUTH_USER_MODEL
 
 class Payment(models.Model):
 
-    STATUS_CHOICES = (
+    PAYMENT_STATUS = (
         ("pending", "Pending"),
         ("successful", "Successful"),
         ("failed", "Failed"),
         ("refunded", "Refunded"),
+    )
+
+
+    PAYMENT_METHODS = (
+        ("card", "Card"),
+        ("wallet", "Wallet"),
+        ("bank", "Bank"),
     )
 
 
@@ -36,6 +43,12 @@ class Payment(models.Model):
     )
 
 
+    currency = models.CharField(
+        max_length=10,
+        default="USD"
+    )
+
+
     transaction_id = models.CharField(
         max_length=255,
         unique=True,
@@ -46,14 +59,21 @@ class Payment(models.Model):
 
     payment_method = models.CharField(
         max_length=50,
+        choices=PAYMENT_METHODS,
         blank=True
     )
 
 
     status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICES,
+        choices=PAYMENT_STATUS,
         default="pending"
+    )
+
+
+    failure_reason = models.TextField(
+        blank=True,
+        null=True
     )
 
 
@@ -69,4 +89,4 @@ class Payment(models.Model):
 
     def __str__(self):
 
-        return f"{self.booking} payment"
+        return f"Payment {self.id} - {self.status}"
