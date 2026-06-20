@@ -79,11 +79,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback(
     (userData: User) => {
       setUser(userData);
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("user", JSON.stringify(userData));
 
       router.push(getRedirectPath(userData.role));
     },
-    [router, user],
+    [router],
   );
 
   const logout = useCallback(async () => {

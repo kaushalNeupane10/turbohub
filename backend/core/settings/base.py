@@ -46,6 +46,9 @@ CORS_ALLOWED_ORIGINS = config(
     cast=lambda v: [s.strip() for s in v.split(",")]
 )
 
+# Fetch the variable from your .env file
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+
 CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",
