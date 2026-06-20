@@ -1,5 +1,8 @@
-import type { LucideIcon } from "lucide-react";
-
+import {
+  NavItem,
+  UserMenuItem,
+  UserRole,
+} from "@/types/NavConfig/navConfig.types";
 import {
   Home,
   Info,
@@ -11,20 +14,6 @@ import {
   LogIn,
   UserPlus,
 } from "lucide-react";
-
-export type UserRole = "admin" | "owner" | "customer";
-
-export interface NavItem {
-  label: string;
-  href: string;
-  icon?: LucideIcon;
-}
-
-export interface UserMenuItem {
-  label: string;
-  href: string;
-  icon?: LucideIcon;
-}
 
 export const MAIN_NAVIGATION: NavItem[] = [
   {

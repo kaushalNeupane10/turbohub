@@ -1,10 +1,11 @@
+import { UserRole } from "../NavConfig/navConfig.types";
+
 export interface User {
   id: string;
   email: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   avatar?: string | null;
-  role: string;
+  role: UserRole;
 }
 
 export interface LoginData {
