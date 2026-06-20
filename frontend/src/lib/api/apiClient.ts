@@ -30,13 +30,6 @@ const api: AxiosInstance = axios.create({
 });
 
 function normalizeErrors(data: BackendErrorResponse): Record<string, string[]> {
-  // Case:
-  // {
-  //   errors:{
-  //      email:["already exists"]
-  //   }
-  // }
-
   if (data.errors) {
     return data.errors;
   }

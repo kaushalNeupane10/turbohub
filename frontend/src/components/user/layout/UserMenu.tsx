@@ -35,7 +35,7 @@ export default function UserMenu() {
   const menuItems = USER_MENU[user.role];
 
   const initials =
-    user?.name
+    user?.full_name
       ?.split(" ")
       .map((part) => part[0])
       .join("")
@@ -61,7 +61,7 @@ export default function UserMenu() {
         {user.avatar ? (
           <Image
             src={user.avatar}
-            alt={user.name}
+            alt={user.full_name}
             width={40}
             height={40}
             className="h-10 w-10 rounded-full object-cover"
@@ -83,7 +83,7 @@ export default function UserMenu() {
 
         <div className="hidden sm:flex flex-col items-start">
           <span className="text-sm font-semibold text-text-heading">
-            {user.name}
+            {user.full_name}
           </span>
 
           <span
@@ -122,7 +122,7 @@ export default function UserMenu() {
           "
         >
           <div className="border-b border-border p-4">
-            <p className="font-semibold text-text-heading">{user.name}</p>
+            <p className="font-semibold text-text-heading">{user.full_name}</p>
 
             <p className="text-sm text-text-muted">{user.email}</p>
           </div>

@@ -3,7 +3,7 @@ import { UserRole } from "../NavConfig/navConfig.types";
 export interface User {
   id: string;
   email: string;
-  name: string;
+  full_name: string;
   avatar?: string | null;
   role: UserRole;
 }
