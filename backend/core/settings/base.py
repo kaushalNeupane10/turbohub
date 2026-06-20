@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     'apps.vehicles',
     'apps.bookings',
     'apps.reviews',
+    'apps.payments',
     'rest_framework',
     'corsheaders',
     'django_filters',
