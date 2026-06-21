@@ -22,3 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 class AvatarUpdateSerializer(serializers.Serializer):
     avatar_url = serializers.URLField()
     avatar_public_id = serializers.CharField(max_length=255)
+
+# refresh token
+class RefreshTokenSerializer(serializers.Serializer):
+    pass
