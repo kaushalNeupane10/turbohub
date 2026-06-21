@@ -19,3 +19,31 @@ class MeView(APIView):
         serializer = UserSerializer(request.user)
 
         return Response(serializer.data)
+
+# avatar
+class UpdateAvatarView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        serializer = AvatarUpdateSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        request.user.avatar_url = serializer.validated_data["avatar_url"]
+
+        request.user.avatar_public_id = serializer.validated_data[
+            "avatar_public_id"
+        ]
+
+        request.user.save(
+            update_fields=[
+                "avatar_url",
+                "avatar_public_id",
+            ]
+        )
+
+        return Response(
+            UserSerializer(request.user).data
+        )

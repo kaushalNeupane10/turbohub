@@ -16,4 +16,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "full_name", "role"] 
+        fields = ["id", "email", "full_name", "avatar_url", "role"]  
+
+
+class AvatarUpdateSerializer(serializers.Serializer):
+    avatar_url = serializers.URLField()
+    avatar_public_id = serializers.CharField(max_length=255)
