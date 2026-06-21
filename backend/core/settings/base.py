@@ -46,6 +46,17 @@ CORS_ALLOWED_ORIGINS = config(
     cast=lambda v: [s.strip() for s in v.split(",")]
 )
 
+# cookies settings for auth
+ACCESS_COOKIE_NAME = "access_token"
+REFRESH_COOKIE_NAME = "refresh_token"
+
+ACCESS_COOKIE_AGE = 60 * 15
+REFRESH_COOKIE_AGE = 60 * 60 * 24 * 7
+
+COOKIE_SECURE = not DEBUG
+
+COOKIE_SAMESITE = "Lax"
+
 # Fetch the variable from your .env file
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 
@@ -58,9 +69,9 @@ CORS_ALLOW_HEADERS = [
 
 # Add drf and jwt config
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "apps.users.api.authentication.CookieJWTAuthentication",
+    ],
 
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
@@ -80,7 +91,7 @@ REST_FRAMEWORK = {
 
 # jwt setting
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -103,6 +114,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 #middleware
