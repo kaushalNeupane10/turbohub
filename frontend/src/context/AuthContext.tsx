@@ -11,8 +11,11 @@ import {
 } from "react";
 
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/lib/api/apiClient";
+
+import { apiClient, setAuthExpiredHandler } from "@/lib/api/apiClient";
+
 import { User } from "@/types/auth/auth";
+
 import { getRedirectPath } from "@/utils/auth";
 
 interface AuthContextType {
@@ -52,6 +55,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isAuthenticated = Boolean(user);
 
+  // LOAD CURRENT USER
+
   const getUserProfile = useCallback(async (): Promise<User | null> => {
     try {
       return await apiClient<User>("/api/auth/me/");
@@ -59,6 +64,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return null;
     }
   }, []);
+
+  // VERIFY SESSION
 
   const verifyToken = useCallback(async () => {
     try {
@@ -72,11 +79,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [getUserProfile]);
 
+  // INITIAL AUTH CHECK
+
   useEffect(() => {
     verifyToken();
   }, [verifyToken]);
 
-  // login
+  // HANDLE EXPIRED SESSION
+
+  useEffect(() => {
+    setAuthExpiredHandler(() => {
+      setUser(null);
+
+      router.replace("/login");
+    });
+  }, [router]);
+
+  // LOGIN
+
   const login = useCallback(async () => {
     const profile = await getUserProfile();
 
@@ -89,6 +109,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     router.push(getRedirectPath(profile.role));
   }, [getUserProfile, router]);
 
+  // LOGOUT
+
   const logout = useCallback(async () => {
     try {
       setIsLoggingOut(true);
@@ -96,46 +118,68 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await apiClient("/api/auth/logout/", {
         method: "POST",
       });
+    } finally {
+      // always clear frontend auth
 
       setUser(null);
 
-      router.replace("/");
-    } finally {
       setIsLoggingOut(false);
+
+      router.replace("/");
     }
   }, [router]);
 
+  // UPDATE AVATAR
+
   const updateAvatar = useCallback((avatar: string) => {
-    setUser((prev) =>
-      prev
-        ? {
-            ...prev,
-            avatar,
-          }
-        : null,
-    );
+    setUser((prev) => {
+      if (!prev) {
+        return null;
+      }
+
+      return {
+        ...prev,
+
+        avatar,
+      };
+    });
   }, []);
 
   const value = useMemo<AuthContextType>(
     () => ({
       user,
+
       setUser,
+
       isAuthenticated,
+
       checkingForAuth,
+
       isLoggingOut,
+
       login,
+
       logout,
+
       refreshUser: verifyToken,
+
       updateAvatar,
     }),
     [
       user,
+
       isAuthenticated,
+
       checkingForAuth,
+
       isLoggingOut,
+
       login,
+
       logout,
+
       verifyToken,
+
       updateAvatar,
     ],
   );
