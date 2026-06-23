@@ -9,9 +9,59 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.exceptions import TokenError
 
-class RegisterView(generics.CreateAPIView):
-    serializer_class = RegisterSerializer
+#  register view auto login after registration 
+class RegisterView(APIView):
     permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        user = serializer.save()
+
+        refresh = RefreshToken.for_user(
+            user
+        )
+
+        access_token = str(
+            refresh.access_token
+        )
+
+        refresh_token = str(
+            refresh
+        )
+
+        response = Response(
+            {
+                "message": "Registration successful"
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+        response.set_cookie(
+            settings.ACCESS_COOKIE_NAME,
+            access_token,
+            max_age=settings.ACCESS_COOKIE_AGE,
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
+        )
+
+        response.set_cookie(
+            settings.REFRESH_COOKIE_NAME,
+            refresh_token,
+            max_age=settings.REFRESH_COOKIE_AGE,
+            httponly=True,
+            secure=settings.COOKIE_SECURE,
+            samesite=settings.COOKIE_SAMESITE,
+        )
+
+        return response
 
 # login view
 class LoginView(APIView):

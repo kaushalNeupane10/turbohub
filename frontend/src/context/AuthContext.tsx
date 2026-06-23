@@ -26,7 +26,7 @@ interface AuthContextType {
 
   isLoggingOut: boolean;
 
-  login: (user: User) => void;
+  login: () => Promise<void>;
 
   logout: () => Promise<void>;
 
@@ -76,15 +76,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     verifyToken();
   }, [verifyToken]);
 
-  const login = useCallback(
-    (userData: User) => {
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+  // login
+  const login = useCallback(async () => {
+    const profile = await getUserProfile();
 
-      router.push(getRedirectPath(userData.role));
-    },
-    [router],
-  );
+    if (!profile) {
+      throw new Error("Unable to load profile");
+    }
+
+    setUser(profile);
+
+    router.push(getRedirectPath(profile.role));
+  }, [getUserProfile, router]);
 
   const logout = useCallback(async () => {
     try {

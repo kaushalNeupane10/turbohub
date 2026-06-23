@@ -1,8 +1,12 @@
 import { apiClient } from "@/lib/api/apiClient";
 import { User, RegisterData, LoginData } from "@/types/auth/auth";
 
-export const loginUser = async (payload: LoginData): Promise<User> => {
-  return apiClient<User>("/api/auth/login/", {
+interface LoginResponse {
+  message: string;
+}
+
+export const loginUser = async (payload: LoginData): Promise<LoginResponse> => {
+  return apiClient<LoginResponse>("/api/auth/login/", {
     method: "POST",
     data: payload,
   });

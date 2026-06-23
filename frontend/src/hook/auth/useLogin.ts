@@ -43,8 +43,8 @@ export default function useLogin() {
     setServerError(null);
   };
 
-  const handleLogin = async (): Promise<User | null> => {
-    if (loading) return null;
+  const handleLogin = async (): Promise<void> => {
+    if (loading) return;
 
     const validation = loginSchema.safeParse(formData);
 
@@ -61,7 +61,7 @@ export default function useLogin() {
 
       setError(fieldErrors);
 
-      return null;
+      return;
     }
 
     try {
@@ -69,11 +69,8 @@ export default function useLogin() {
       setError({});
       setServerError(null);
 
-      const user = await loginUser(validation.data);
-
-      login(user);
-
-      return user;
+      await loginUser(validation.data);
+      await login();
     } catch (err) {
       const apiError = err as ApiError;
 
@@ -93,7 +90,7 @@ export default function useLogin() {
         setServerError(apiError.message);
       }
 
-      return null;
+      return;
     } finally {
       setLoading(false);
     }

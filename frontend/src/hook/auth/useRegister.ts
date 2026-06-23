@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { registerUser } from "@/lib/services/auth.service";
+import { loginUser, registerUser } from "@/lib/services/auth.service";
 import { useAuth } from "@/context/AuthContext";
 
 import { RegisterData, User } from "@/types/auth/auth";
@@ -74,7 +74,8 @@ export default function useRegister() {
 
       // Optional:
       // Auto-login immediately after successful registration
-      login(user);
+      await loginUser(user);
+      await login();
 
       return user;
     } catch (err) {
