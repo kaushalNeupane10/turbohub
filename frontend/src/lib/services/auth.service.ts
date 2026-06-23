@@ -5,6 +5,10 @@ interface LoginResponse {
   message: string;
 }
 
+interface RegisterResponse {
+  message: string;
+}
+
 export const loginUser = async (payload: LoginData): Promise<LoginResponse> => {
   return apiClient<LoginResponse>("/api/auth/login/", {
     method: "POST",
@@ -12,8 +16,10 @@ export const loginUser = async (payload: LoginData): Promise<LoginResponse> => {
   });
 };
 
-export const registerUser = async (payload: RegisterData): Promise<User> => {
-  return apiClient<User>("/api/auth/register/", {
+export const registerUser = async (
+  payload: RegisterData,
+): Promise<RegisterResponse> => {
+  return apiClient<RegisterResponse>("/api/auth/register/", {
     method: "POST",
     data: payload,
   });

@@ -44,8 +44,8 @@ export default function useRegister() {
     setServerError(null);
   };
 
-  const handleRegister = async (): Promise<User | null> => {
-    if (loading) return null;
+  const handleRegister = async (): Promise<void> => {
+    if (loading) return;
 
     const validation = registerSchema.safeParse(formData);
 
@@ -62,7 +62,7 @@ export default function useRegister() {
 
       setError(fieldErrors);
 
-      return null;
+      return;
     }
 
     try {
@@ -70,14 +70,9 @@ export default function useRegister() {
       setError({});
       setServerError(null);
 
-      const user = await registerUser(validation.data);
+      await registerUser(validation.data);
 
-      // Optional:
-      // Auto-login immediately after successful registration
-      await loginUser(user);
       await login();
-
-      return user;
     } catch (err) {
       const apiError = err as ApiError;
 
@@ -96,7 +91,7 @@ export default function useRegister() {
       } else {
         setServerError(apiError.message);
       }
-      return null;
+      return;
     } finally {
       setLoading(false);
     }
