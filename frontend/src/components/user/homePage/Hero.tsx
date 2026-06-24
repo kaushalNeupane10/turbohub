@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-  Search,
-  MapPin,
-  Bike,
-  Zap,
-  Gauge,
-} from "lucide-react";
+import { Search, MapPin, Bike, Zap, Gauge } from "lucide-react";
 
 type Vehicle = {
   tag: string;
@@ -68,11 +62,6 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* LEFT CONTENT */}
           <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs sm:text-sm font-semibold uppercase tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-              Unleash Absolute Freedom
-            </div>
-
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-text-heading leading-[1.1]">
               Dominate the Roads
               <br className="hidden sm:inline" />
