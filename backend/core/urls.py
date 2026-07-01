@@ -23,4 +23,7 @@ urlpatterns = [
 
     # payments
     path("api/payments/", include("apps.payments.api.urls")),
+
+    #media manager
+    path("api/media/", include("media_manager.api.urls")),
 ]
