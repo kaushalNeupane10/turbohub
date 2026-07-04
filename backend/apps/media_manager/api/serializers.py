@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from . import services
-from .models import MediaFile, MediaFolder
+from ..models import MediaFile, MediaFolder
 
 
 class MediaFolderSerializer(serializers.ModelSerializer):

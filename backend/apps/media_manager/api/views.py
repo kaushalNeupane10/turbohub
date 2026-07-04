@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from . import services
-from .models import MediaFile, MediaFolder
+from ..models import MediaFile, MediaFolder
 from .permissions import CanWriteAdminSpace, IsOwnerOrAdminOfMedia
 from .serializers import MediaFileSerializer, MediaFolderSerializer, MediaUploadSerializer
 
