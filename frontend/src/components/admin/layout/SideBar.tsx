@@ -196,15 +196,21 @@ export default function SideBar() {
         `}
       >
         {/* Logo Section */}
-        <div className="flex h-16 shrink-0 items-center border-b border-border-subtle px-4">
+        <div
+          className={`border-b border-border-subtle px-3 py-3 ${
+            isCollapsed
+              ? "flex flex-col items-center gap-3"
+              : "flex h-16 items-center justify-between"
+          }`}
+        >
           <Link
             href="/"
-            className={`flex w-full min-w-0 items-center ${
+            className={`flex min-w-0 items-center ${
               isCollapsed ? "justify-center" : "gap-3"
             }`}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50">
-              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand to-accent-light flex items-center justify-center text-brand-foreground font-black text-xl shadow-brand">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-brand to-accent-light text-xl font-black text-brand-foreground shadow-brand">
                 T
               </div>
             </div>
@@ -218,7 +224,7 @@ export default function SideBar() {
                   transition={{ duration: 0.15 }}
                   className="min-w-0 overflow-hidden whitespace-nowrap"
                 >
-                  <h2 className="text-base font-extrabold leading-tight text-text-heading">
+                  <h2 className="text-base font-extrabold text-text-heading">
                     Turbo <span className="text-brand">Hub</span>
                   </h2>
                   <p className="text-xs font-medium text-text-muted">
@@ -228,6 +234,7 @@ export default function SideBar() {
               )}
             </AnimatePresence>
           </Link>
+
           <ThemeToggle />
         </div>
 
