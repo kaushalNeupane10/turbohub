@@ -22,6 +22,9 @@ export function useMediaFiles(params?: MediaListParams) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
+  const [count, setCount] = useState(0);
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
 
   const fetchFiles = useCallback(
     async (overrideParams?: MediaListParams) => {
@@ -29,7 +32,10 @@ export function useMediaFiles(params?: MediaListParams) {
       setError(null);
       try {
         const data = await getMediaFiles(overrideParams ?? params);
-        setFiles(data);
+        setFiles(data.results);
+        setCount(data.count);
+        setNext(data.next);
+        setPrevious(data.previous);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Failed to load media";
         setError(msg);
@@ -107,5 +113,8 @@ export function useMediaFiles(params?: MediaListParams) {
     uploadFiles,
     removeFile,
     clearUploadError,
+    count,
+    next,
+    previous,
   };
 }

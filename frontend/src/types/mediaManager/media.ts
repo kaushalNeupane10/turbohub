@@ -43,11 +43,13 @@ export interface MediaListParams {
   folder?: string;
   search?: string;
   space?: "admin" | "mine";
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 export interface FolderListParams {
   parent?: string;
   space?: "admin" | "mine";
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 // Used by MediaPicker to return selected media to parent

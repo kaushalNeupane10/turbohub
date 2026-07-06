@@ -22,7 +22,7 @@ export function useMediaFolders(params?: FolderListParams) {
       setError(null);
       try {
         const data = await getFolders(overrideParams ?? params);
-        setFolders(data);
+        setFolders(data.results);
       } catch (err: unknown) {
         const msg =
           err instanceof Error ? err.message : "Failed to load folders";

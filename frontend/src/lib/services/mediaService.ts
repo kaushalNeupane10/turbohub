@@ -1,5 +1,5 @@
 import { apiClient, buildUrl } from "@/lib/api/apiClient";
-
+import { PaginatedResponse } from "@/types/common/pagination";
 import {
   MediaFile,
   MediaFolder,
@@ -11,8 +11,10 @@ import {
 
 // folder
 
-export const getFolders = (params?: FolderListParams): Promise<MediaFolder[]> =>
-  apiClient<MediaFolder[]>(buildUrl("/api/media/folders/", params));
+export const getFolders = (
+  params?: FolderListParams,
+): Promise<PaginatedResponse<MediaFolder>> =>
+  apiClient(buildUrl("/api/media/folders/", params));
 
 export const createFolder = (
   payload: CreateFolderPayload,
@@ -32,8 +34,10 @@ export const renameFolder = (id: string, name: string): Promise<MediaFolder> =>
   });
 
 //   file
-export const getMediaFiles = (params?: MediaListParams): Promise<MediaFile[]> =>
-  apiClient<MediaFile[]>(buildUrl("/api/media/files/", params));
+export const getMediaFiles = (
+  params?: MediaListParams,
+): Promise<PaginatedResponse<MediaFile>> =>
+  apiClient(buildUrl("/api/media/files/", params));
 
 export const uploadMediaFile = (
   payload: MediaUploadPayload,
