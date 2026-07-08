@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 
@@ -16,9 +15,10 @@ import {
   PanelLeftOpen,
   Settings,
   CircleDot,
-  Clapperboard,
-  FileText,
-  Video,
+  Car,
+  Images,
+  CarFront,
+  CalendarCheck,
 } from "lucide-react";
 
 import SignOutBtn from "./SignOutBtn";
@@ -39,23 +39,23 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Blogs", href: "/admin/blogs", icon: FileText },
   {
-    name: "posts",
-    icon: Clapperboard,
+    name: "Vehicle",
+    icon: Car,
     children: [
       {
-        name: "Manage Blogs",
-        href: "/admin/blogs",
-        icon: FileText,
+        name: "Manage Vehicle",
+        href: "/admin/vehicle/manageVehicle",
+        icon: CarFront,
       },
       {
-        name: "Video Posts",
-        href: "/admin/video",
-        icon: Video,
+        name: "Bookings",
+        href: "/admin/vehicle/bookings",
+        icon: CalendarCheck,
       },
     ],
   },
+  { name: "Media Managemnt", href: "/admin/media", icon: Images },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -196,15 +196,21 @@ export default function SideBar() {
         `}
       >
         {/* Logo Section */}
-        <div className="flex h-16 shrink-0 items-center border-b border-border-subtle px-4">
+        <div
+          className={`border-b border-border-subtle px-3 py-3 ${
+            isCollapsed
+              ? "flex flex-col items-center gap-3"
+              : "flex h-16 items-center justify-between"
+          }`}
+        >
           <Link
             href="/"
-            className={`flex w-full min-w-0 items-center ${
+            className={`flex min-w-0 items-center ${
               isCollapsed ? "justify-center" : "gap-3"
             }`}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50">
-              <div className="w-10 h-10 rounded-xl bg-linear-to-br from-brand to-accent-light flex items-center justify-center text-brand-foreground font-black text-xl shadow-brand">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-brand to-accent-light text-xl font-black text-brand-foreground shadow-brand">
                 T
               </div>
             </div>
@@ -218,7 +224,7 @@ export default function SideBar() {
                   transition={{ duration: 0.15 }}
                   className="min-w-0 overflow-hidden whitespace-nowrap"
                 >
-                  <h2 className="text-base font-extrabold leading-tight text-text-heading">
+                  <h2 className="text-base font-extrabold text-text-heading">
                     Turbo <span className="text-brand">Hub</span>
                   </h2>
                   <p className="text-xs font-medium text-text-muted">
@@ -227,8 +233,9 @@ export default function SideBar() {
                 </motion.div>
               )}
             </AnimatePresence>
-            <ThemeToggle />
           </Link>
+
+          <ThemeToggle />
         </div>
 
         {/* Navigation */}
@@ -304,7 +311,7 @@ export default function SideBar() {
                     </AnimatePresence>
 
                     {isCollapsed && (
-                      <span className="pointer-events-none absolute left-[68px] z-50 scale-95 rounded-lg bg-brand-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-all group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
+                      <span className="pointer-events-none absolute left-17 z-50 scale-95 rounded-lg bg-brand-950 px-2.5 py-1.5 text-xs font-semibold text-white opacity-0 shadow-md transition-all group-hover:scale-100 group-hover:opacity-100 whitespace-nowrap">
                         {item.name}
                       </span>
                     )}

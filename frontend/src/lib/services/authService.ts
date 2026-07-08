@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api/apiClient";
-import { User, RegisterData, LoginData } from "@/types/auth/auth";
+import { RegisterData, LoginData } from "@/types/auth/auth";
 
 interface LoginResponse {
   message: string;
