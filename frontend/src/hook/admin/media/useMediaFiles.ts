@@ -9,6 +9,7 @@ import {
   MediaListParams,
   MediaUploadPayload,
 } from "@/types/mediaManager/media";
+import { PaginationMeta } from "@/types/common/pagination";
 
 export interface UploadingFile {
   id: string;
@@ -22,20 +23,22 @@ export function useMediaFiles(params?: MediaListParams) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<UploadingFile[]>([]);
-  const [count, setCount] = useState(0);
-  const [next, setNext] = useState<string | null>(null);
-  const [previous, setPrevious] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
   const fetchFiles = useCallback(
     async (overrideParams?: MediaListParams) => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getMediaFiles(overrideParams ?? params);
-        setFiles(data.results);
-        setCount(data.count);
-        setNext(data.next);
-        setPrevious(data.previous);
+        const res = await getMediaFiles(overrideParams ?? params);
+        setFiles(res.results);
+        setPagination({
+          count: res.count,
+          page: res.page,
+          pageSize: res.page_size,
+          totalPages: res.total_pages,
+        });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Failed to load media";
         setError(msg);
@@ -113,8 +116,8 @@ export function useMediaFiles(params?: MediaListParams) {
     uploadFiles,
     removeFile,
     clearUploadError,
-    count,
-    next,
-    previous,
+    page,
+    setPage,
+    pagination,
   };
 }

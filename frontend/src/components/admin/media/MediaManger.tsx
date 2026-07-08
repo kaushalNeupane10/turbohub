@@ -7,7 +7,7 @@ import { useMediaFolders } from "@/hook/admin/media/useMediaFolders";
 import FolderTree from "./FolderTree";
 import MediaCard from "./MediaCard";
 import MediaUploadZone from "./MediaUploadZone";
-
+import Pagination from "@/components/ui/common/Pagination";
 interface MediaManagerProps {
   // If true, renders as a picker: checkboxes + confirm button
   pickerMode?: boolean;
@@ -47,6 +47,9 @@ export default function MediaManager({
     uploadFiles,
     removeFile,
     clearUploadError,
+    page,
+    setPage,
+    pagination,
   } = useMediaFiles();
 
   const {
@@ -63,9 +66,10 @@ export default function MediaManager({
       folder: activeFolderId ?? undefined,
       search: debouncedSearch,
       space,
+      page,
     });
     fetchFolders({ space });
-  }, [activeFolderId, debouncedSearch, space, fetchFiles, fetchFolders]);
+  }, [activeFolderId, debouncedSearch, space, page, fetchFiles, fetchFolders]);
 
   useEffect(() => {
     load();
@@ -350,6 +354,9 @@ export default function MediaManager({
             </div>
           )}
         </div>
+        {pagination && (
+          <Pagination pagination={pagination} onPageChange={setPage} />
+        )}
       </div>
     </div>
   );
