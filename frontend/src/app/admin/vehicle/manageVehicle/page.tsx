@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Plus, CarFront } from "lucide-react";
 
 import SearchBox from "@/components/common/SearchBox";
-import Pagination from "@/components/common/Pagination";
+// import Pagination from "@/components/ui/common/Pagination";
 import TableSkeleton from "@/components/admin/vehicle/TableSkeleton";
 import Select from "@/components/ui/formFields/Select";
 import VehicleTable from "@/components/admin/vehicle/VehicleTable";
@@ -353,15 +353,7 @@ export default function VehicleManagementPage() {
 
       {/* Pagination */}
 
-      <Pagination
-        currentPage={page}
-        totalPages={totalPages}
-        totalItems={count}
-        hasNext={page < totalPages}
-        hasPrev={page > 1}
-        loading={loading.fetch}
-        onPageChange={handlePageChange}
-      />
+      {/* <Pagination onPageChange={handlePageChange} /> */}
     </section>
   );
 }

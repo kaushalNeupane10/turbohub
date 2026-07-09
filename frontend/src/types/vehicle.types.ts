@@ -1,23 +1,21 @@
 export type VehicleCategory = "car" | "bike" | "dirt-bike" | "suv" | "electric";
 
-export interface VehicleFeature {
-  icon: string;
-  label: string;
+export interface VehicleListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
 }
-
-export interface Vehicle {
-  id: string;
+export interface VehicleApiResponse {
+  id: number;
   name: string;
   description: string;
-  image: string;
-  category: VehicleCategory;
+  vehicle_type: string[];
   badge: string;
   tagline: string;
-  rating: number;
-  reviews: number;
-  pricePerDay: number;
-  available: boolean;
-  features: VehicleFeature[];
+  image_id: string;
+  price_per_day: string;
+  location: string;
+  status: string;
 }
 
 export interface VehicleFormData {
@@ -30,5 +28,4 @@ export interface VehicleFormData {
   price_per_day: string;
   location: string;
   status: "available" | "unavailable" | "maintenance";
-  features: VehicleFeature[];
 }
