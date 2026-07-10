@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import Loading from "@/components/common/Loading";
 import { useAuth } from "@/context/AuthContext";
-import { getRedirectPath } from "@/utils/auth";
+import { getRedirectPath } from "@/utils/authRedirect";
 import { UserRole } from "@/types/NavConfig/navConfig.types";
 
 interface ProtectedRouteProps {

@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { Plus, CarFront } from "lucide-react";
-
 import SearchBox from "@/components/common/SearchBox";
-// import Pagination from "@/components/ui/common/Pagination";
+import Pagination from "@/components/ui/common/Pagination";
 import TableSkeleton from "@/components/admin/vehicle/TableSkeleton";
 import Select from "@/components/ui/formFields/Select";
 import VehicleTable from "@/components/admin/vehicle/VehicleTable";
@@ -55,16 +54,8 @@ export default function VehicleManagementPage() {
 
   const hasFilters =
     Boolean(filters.status) ||
-    Boolean(filters.category) ||
+    Boolean(filters.location) ||
     Boolean(searchQuery);
-
-  const handleCreateVehicle = () => {
-    router.push("/admin/vehicles/create");
-  };
-
-  const handleEditVehicle = (id: string) => {
-    router.push(`/admin/vehicles/${id}/edit`);
-  };
 
   return (
     <section
