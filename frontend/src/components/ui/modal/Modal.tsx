@@ -1,14 +1,18 @@
 "use client";
 
-import { ReactNode, useCallback, useEffect, useMemo } from "react";
+import { ReactNode, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLockBodyScroll } from "@/hook/common/useLockBodyScroll";
+import { ModalContext } from "./ModalContext";
+import ModalHeader from "./ModalHeader";
+import ModalBody from "./ModalBody";
+import ModalFooter from "./ModalFooter";
 
-interface ModalProps {
+export interface ModalProps {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "full";
   closeOnOverlay?: boolean;
   closeOnEsc?: boolean;
 }
@@ -18,9 +22,10 @@ const SIZE_CLASSES = {
   md: "max-w-2xl",
   lg: "max-w-4xl",
   xl: "max-w-6xl",
-};
+  full: "max-w-[95vw]",
+} as const;
 
-export default function Modal({
+function Modal({
   open,
   onClose,
   children,
@@ -51,10 +56,12 @@ export default function Modal({
     };
   }, [open, handleEsc]);
 
-  const modal = useMemo(() => {
-    if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
-    return (
+  return createPortal(
+    <ModalContext.Provider value={{ onClose }}>
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50 p-4"
         onClick={() => {
@@ -66,18 +73,28 @@ export default function Modal({
         <div
           role="dialog"
           aria-modal="true"
+          aria-labelledby="modal-title"
+          onClick={(event) => event.stopPropagation()}
           className={`w-full rounded-2xl bg-bg-surface shadow-xl ${SIZE_CLASSES[size]}`}
-          onClick={(e) => e.stopPropagation()}
         >
           {children}
         </div>
       </div>
-    );
-  }, [children, closeOnOverlay, onClose, open, size]);
-
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return createPortal(modal, document.body);
+    </ModalContext.Provider>,
+    document.body,
+  );
 }
+
+type ModalComponent = typeof Modal & {
+  Header: typeof ModalHeader;
+  Body: typeof ModalBody;
+  Footer: typeof ModalFooter;
+};
+
+const CompoundModal = Modal as ModalComponent;
+
+CompoundModal.Header = ModalHeader;
+CompoundModal.Body = ModalBody;
+CompoundModal.Footer = ModalFooter;
+
+export default CompoundModal;
