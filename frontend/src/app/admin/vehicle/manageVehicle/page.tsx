@@ -1,21 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Plus, CarFront } from "lucide-react";
-import SearchBox from "@/components/common/SearchBox";
+import { Plus} from "lucide-react";
 import Pagination from "@/components/ui/common/Pagination";
 import TableSkeleton from "@/components/admin/vehicle/TableSkeleton";
-import Select from "@/components/ui/formFields/Select";
 import VehicleTable from "@/components/admin/vehicle/VehicleTable";
 import useVehicleCrud from "@/hook/admin/vehicle/useVehicleCrud";
+import VehicleToolBar from "@/components/admin/vehicle/VehicleToolBar";
+import { SelectOption } from "@/types/common/select";
+import EmptyState from "@/components/admin/vehicle/EmptyState";
 
-interface FilterOption {
-  label: string;
-  value: string | boolean;
-}
 
 export default function VehicleManagementPage() {
-  const router = useRouter();
 
   const {
     searchQuery,
@@ -32,14 +27,14 @@ export default function VehicleManagementPage() {
     filterOptions,
   } = useVehicleCrud();
 
-  const STATUS_FILTERS: FilterOption[] = [
+  const STATUS_FILTERS: SelectOption[] = [
     {
       label: "Available",
-      value: true,
+      value: "available",
     },
     {
       label: "Unavailable",
-      value: false,
+      value: "unavailable",
     },
   ];
 
@@ -145,7 +140,7 @@ export default function VehicleManagementPage() {
         </div>
       </div>
 
-      {/* Main Card */}
+      {/* Main Table */}
       <div
         className="
           overflow-hidden
@@ -161,174 +156,27 @@ export default function VehicleManagementPage() {
         "
       >
         {/* Toolbar */}
-        <div
-          className="
-            border-b
-            border-border-subtle
-
-            bg-surface
-
-            p-5
-          "
-        >
-          <div
-            className="
-              flex
-              flex-col
-
-              gap-4
-
-              lg:flex-row
-              lg:items-center
-              lg:justify-between
-            "
-          >
-            {/* Search */}
-            <div
-              className="
-                w-full
-                lg:max-w-md
-              "
-            >
-              <SearchBox
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search vehicles..."
-              />
-            </div>
-
-            {/* Filters */}
-            <div
-              className="
-                flex
-                flex-wrap
-
-                gap-3
-
-                items-center
-
-                lg:justify-end
-              "
-            >
-              <Select
-                value={filters.status}
-                options={STATUS_FILTERS}
-                placeholder="All Status"
-                onChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
-
-                    status: value,
-                  }))
-                }
-              />
-
-              <Select
-                value={filters.category}
-                options={filterOptions.categories}
-                placeholder="All Categories"
-                onChange={(value) =>
-                  setFilters((prev) => ({
-                    ...prev,
-
-                    category: value,
-                  }))
-                }
-              />
-
-              {hasFilters && (
-                <button
-                  onClick={handleClearFilters}
-                  className="
-                      h-11
-
-                      rounded-xl
-
-                      border
-
-                      border-border
-
-                      px-4
-
-                      text-sm
-
-                      font-medium
-
-                      text-text-body
-
-                      transition
-
-                      hover:bg-bg-elevated
-                    "
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
+<VehicleToolBar
+  searchQuery={searchQuery}
+  onSearchChange={setSearchQuery}
+  status={filters.status}
+  category={filters.category}
+  onStatusChange={...}
+  onCategoryChange={...}
+  categoryOptions={filterOptions.categories}
+  hasFilters={hasFilters}
+  onClearFilters={handleClearFilters}
+/>
         {/* Loading */}
-        {loading.fetch && <TableSkeleton count={5} />}
+        {loading.fetch && <TableSkeleton />}
 
         {/* Empty State */}
         {!loading.fetch && (!data || data.length === 0) && (
-          <div
-            className="
-                flex
-
-                min-h-[420px]
-
-                flex-col
-
-                items-center
-
-                justify-center
-
-                bg-surface
-
-                p-8
-                text-center
-              "
-          >
-            <div
-              className="
-                  mb-5
-                  flex
-                  h-16
-                  w-16
-                  items-center
-                  justify-center
-                  rounded-2xl
-                  bg-brand-subtle/10
-                  text-brand
-                "
-            >
-              <CarFront size={32} />
-            </div>
-
-            <h2
-              className="
-                  text-xl
-                  font-bold
-                  text-text-heading
-                "
-            >
-              No Vehicles Found
-            </h2>
-            <p
-              className="
-                  mt-2
-                  max-w-md
-                  text-sm
-                  leading-relaxed
-                  text-text-muted
-                "
-            >
-              Your rental vehicles will appear here. Add vehicles or adjust your
-              filters to view inventory.
-            </p>
-          </div>
+          <EmptyState 
+          onAddVehicle={handleCreateVehicle}
+          hasFilters={hasFilters}
+          onClearFilters={handleClearFilters}          
+          />
         )}
 
         {/* Table */}
