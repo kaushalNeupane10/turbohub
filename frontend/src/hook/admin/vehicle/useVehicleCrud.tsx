@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useDebounce } from "@/hook/common/useDebounce";
 import { ApiError } from "@/lib/api/apiClient";
 import { VehicleFormData, VehicleApiResponse } from "@/types/vehicle.types";
-import { vehicleService } from "@/lib/services/vehicleService";
+import { vehicleService } from "@/lib/services/vehicle.service";
 interface LoadingState {
   fetch: boolean;
   create: boolean;

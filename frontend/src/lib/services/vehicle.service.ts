@@ -1,5 +1,4 @@
-import { apiClient } from "@/lib/api/apiClient";
-import { API_ENDPOINTS } from "@/constants/api-endpoints";
+import { apiClient, API_ENDPOINTS } from "@/lib/api";
 import {
   VehicleApiResponse,
   VehicleFormData,
