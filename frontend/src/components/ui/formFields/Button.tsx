@@ -15,24 +15,7 @@ export default function Button({
     <button
       {...props}
       disabled={loading || disabled}
-      className={`
-        flex
-        w-full
-        items-center
-        justify-center
-        gap-2
-        rounded-lg
-        bg-brand
-        px-4
-        py-3
-        font-medium
-        text-brand-foreground
-        transition
-        hover:bg-brand-dark
-        disabled:cursor-not-allowed
-        disabled:opacity-60
-        ${className}
-      `}
+      className={`flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 font-medium text-brand-foreground transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
     >
       {loading ? (
         <>

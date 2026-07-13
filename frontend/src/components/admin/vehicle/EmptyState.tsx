@@ -12,7 +12,7 @@ export default function EmptyState({
   hasFilters = false,
 }: EmptyStateProps) {
   return (
-    <div className="flex min-h-100 flex-col items-center justify-center rounded-3xl border border-border-subtle bg-bg-surface px-6 py-12 text-center shadow-sm transition-all duration-300 sm:px-12 lg:min-h-[480px]">
+    <div className="flex min-h-100 flex-col items-center justify-center rounded-3xl border border-border-subtle bg-bg-surface px-6 py-12 text-center shadow-sm transition-all duration-300 sm:px-12 lg:min-h-120">
       {/* Icon Container with Subtle Shadow/Glow */}
       <div className="relative mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-subtle/10 text-brand shadow-brand transition-transform duration-300 hover:scale-105">
         <CarFront size={32} className="stroke-[1.75]" />
