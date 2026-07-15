@@ -9,7 +9,7 @@ export interface VehicleApiResponse {
   id: number;
   name: string;
   description: string;
-  vehicle_type: string[];
+  vehicle_type: VehicleCategory;
   badge: string;
   tagline: string;
   image_id: string;
@@ -21,11 +21,11 @@ export interface VehicleApiResponse {
 export interface VehicleFormData {
   name: string;
   description: string;
-  vehicle_type: VehicleCategory[];
+  vehicle_type: VehicleCategory | "";
   badge: string;
   tagline: string;
   image_id: string;
   price_per_day: string;
   location: string;
-  status: "available" | "unavailable" | "maintenance";
+  status: string;
 }

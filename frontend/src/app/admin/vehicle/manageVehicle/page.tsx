@@ -10,6 +10,8 @@ import useVehicleCrud from "@/hook/admin/vehicle/useVehicleCrud";
 import { SelectOption } from "@/types/common/select";
 import EmptyState from "@/components/admin/vehicle/EmptyState";
 import { VehicleApiResponse } from "@/types/vehicle.types";
+import VehicleModal from "@/components/admin/vehicle/VehicleModal";
+import { initialFormData } from "@/constants/vehicle";
 
 export default function VehicleManagementPage() {
   const {
@@ -212,6 +214,15 @@ export default function VehicleManagementPage() {
           />
         )}
       </div>
+
+      {/* vehicle modal pop up */}
+      <VehicleModal
+        open={modalOpen}
+        mode={editingVehicle ? "edit" : "create"}
+        vehicle={editingVehicle}
+        initialValues={initialFormData}
+        onClose={handleCloseModal}
+      />
 
       {/* Pagination */}
 

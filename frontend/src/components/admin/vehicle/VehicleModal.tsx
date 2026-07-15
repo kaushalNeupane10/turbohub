@@ -1,40 +1,36 @@
 "use client";
 
 import Modal from "@/components/ui/modal";
-import { VehicleApiResponse, VehicleFormData } from "@/types/vehicle.types";
-import VehicleForm from "./VehicleForm";
 import Button from "@/components/ui/formFields/Button";
+
+import VehicleForm from "./VehicleForm";
+import { useVehicleForm } from "@/hook/admin/vehicle/useVehicleForm";
+
+import { VehicleApiResponse, VehicleFormData } from "@/types/vehicle.types";
 
 interface VehicleModalProps {
   open: boolean;
   mode: "create" | "edit";
-  loading: boolean;
+  vehicle?: VehicleApiResponse | null;
   initialValues: VehicleFormData;
   onClose: () => void;
-  onSubmit: (values: VehicleFormData) => Promise<void>;
 }
 
 export default function VehicleModal({
   open,
   mode,
   vehicle,
-  loading,
   initialValues,
   onClose,
-  onSubmit,
 }: VehicleModalProps) {
-  // handle change for fields
-  const handleChange = (field: keyof VehicleFormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const { formData, errors, loading, handleChange, handleSubmit } =
+    useVehicleForm({
+      mode,
+      vehicle,
+      initialValues,
+      onClose,
+    });
 
-    setErrors((prev) => ({
-      ...prev,
-      [field]: undefined,
-    }));
-  };
   return (
     <Modal open={open} onClose={onClose} size="lg">
       <Modal.Header>
@@ -44,12 +40,13 @@ export default function VehicleModal({
       <Modal.Body>
         <VehicleForm
           formData={formData}
-          onChange={handleChange}
           errors={errors}
+          onChange={handleChange}
         />
       </Modal.Body>
+
       <Modal.Footer>
-        <Button type="button" variant="secondary" onClick={onClose}>
+        <Button type="button" onClick={onClose}>
           Cancel
         </Button>
 

@@ -4,39 +4,12 @@ import Input from "@/components/ui/formFields/Input";
 import Select from "@/components/ui/formFields/Select";
 import Textarea from "@/components/ui/formFields/Textarea";
 import { VehicleFormData } from "@/types/vehicle.types";
-import { SelectOption } from "@/types/common/select";
-
+import { STATUS_OPTIONS, VEHICLE_TYPES } from "@/constants/vehicle";
 interface VehicleFormProps {
   formData: VehicleFormData;
   onChange: (field: keyof VehicleFormData, value: string) => void;
   errors?: Partial<Record<keyof VehicleFormData, string>>;
 }
-
-const STATUS_OPTIONS: SelectOption[] = [
-  {
-    label: "Available",
-    value: "available",
-  },
-  {
-    label: "Unavailable",
-    value: "unavailable",
-  },
-  {
-    label: "Maintenance",
-    value: "maintenance",
-  },
-];
-
-const VEHICLE_TYPES: SelectOption[] = [
-  {
-    label: "Car",
-    value: "car",
-  },
-  {
-    label: "Bike",
-    value: "bike",
-  },
-];
 
 export default function VehicleForm({
   formData,

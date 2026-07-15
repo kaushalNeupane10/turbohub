@@ -6,6 +6,7 @@ import { useDebounce } from "@/hook/common/useDebounce";
 import { ApiError } from "@/lib/api/apiClient";
 import { VehicleFormData, VehicleApiResponse } from "@/types/vehicle.types";
 import { vehicleService } from "@/lib/services/vehicle.service";
+import { initialFormData } from "@/constants/vehicle";
 interface LoadingState {
   fetch: boolean;
   create: boolean;
@@ -14,18 +15,6 @@ interface LoadingState {
 }
 
 const LIMIT = 10;
-
-export const initialFormData: VehicleFormData = {
-  name: "",
-  description: "",
-  vehicle_type: [],
-  badge: "",
-  tagline: "",
-  image_id: "",
-  price_per_day: "",
-  location: "",
-  status: "available",
-};
 
 export default function useVehicleCrud() {
   const [formData, setFormData] = useState(initialFormData);
