@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { SelectedMedia } from "@/types/mediaManager/media";
 import { VehicleApiResponse, VehicleFormData } from "@/types/vehicle.types";
 import { useVehicleMutation } from "./useVehicleMutation";
 
@@ -47,7 +47,7 @@ export function useVehicleForm({
       status: vehicle.status,
       badge: vehicle.badge,
       tagline: vehicle.tagline,
-      image_id: vehicle.image_id,
+      images: vehicle.images,
       location: vehicle.location,
       price_per_day: String(vehicle.price_per_day),
     });
@@ -67,6 +67,11 @@ export function useVehicleForm({
       ...prev,
       [field]: undefined,
     }));
+  };
+
+  // handle image change
+  const handleImagesChange = (images: SelectedMedia[]) => {
+    setFormData((prev) => ({ ...prev, images }));
   };
 
   /*
@@ -113,5 +118,6 @@ export function useVehicleForm({
     loading: mutation.isPending,
     handleChange,
     handleSubmit,
+    handleImagesChange,
   };
 }

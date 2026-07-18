@@ -23,13 +23,21 @@ export default function VehicleModal({
   initialValues,
   onClose,
 }: VehicleModalProps) {
-  const { formData, errors, loading, handleChange, handleSubmit } =
-    useVehicleForm({
-      mode,
-      vehicle,
-      initialValues,
-      onClose,
-    });
+  const {
+    formData,
+    errors,
+    loading,
+    handleChange,
+    handleImagesChange,
+    handleSubmit,
+  } = useVehicleForm({
+    mode,
+    vehicle,
+    initialValues,
+    onClose,
+  });
+
+  // handle image change
 
   return (
     <Modal open={open} onClose={onClose} size="lg">
@@ -42,6 +50,7 @@ export default function VehicleModal({
           formData={formData}
           errors={errors}
           onChange={handleChange}
+          onImagesChange={handleImagesChange}
         />
       </Modal.Body>
 

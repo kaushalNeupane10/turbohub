@@ -10,12 +10,14 @@ class VehicleService {
   async getVehicles(
     params: VehicleListParams,
   ): Promise<PaginatedResponse<VehicleApiResponse>> {
-    return apiClient<PaginatedResponse<VehicleApiResponse>>(
+    const data = await apiClient<PaginatedResponse<VehicleApiResponse>>(
       API_ENDPOINTS.VEHICLES,
       {
         params,
       },
     );
+    console.log("vehicleData:", data);
+    return data;
   }
 
   async createVehicle(payload: VehicleFormData): Promise<VehicleApiResponse> {

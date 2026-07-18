@@ -49,7 +49,7 @@ export const initialFormData: VehicleFormData = {
   vehicle_type: "",
   badge: "",
   tagline: "",
-  image_id: "",
+  images: [],
   price_per_day: "",
   location: "",
   status: "available",

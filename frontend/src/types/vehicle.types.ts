@@ -1,3 +1,5 @@
+import { SelectedMedia } from "./mediaManager/media";
+
 export type VehicleCategory = "car" | "bike" | "dirt-bike" | "suv" | "electric";
 
 export interface VehicleListParams {
@@ -14,7 +16,7 @@ export interface VehicleApiResponse {
   vehicle_type: VehicleCategory;
   badge: string;
   tagline: string;
-  image_id: string;
+  images: SelectedMedia[];
   price_per_day: string;
   location: string;
   status: string;
@@ -26,7 +28,7 @@ export interface VehicleFormData {
   vehicle_type: VehicleCategory | "";
   badge: string;
   tagline: string;
-  image_id: string;
+  images: SelectedMedia[];
   price_per_day: string;
   location: string;
   status: string;
