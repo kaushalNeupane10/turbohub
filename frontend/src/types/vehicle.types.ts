@@ -4,6 +4,8 @@ export interface VehicleListParams {
   page?: number;
   limit?: number;
   search?: string;
+  status?: string;
+  vehicle_type?: VehicleCategory | "";
 }
 export interface VehicleApiResponse {
   id: number;

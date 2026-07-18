@@ -26,7 +26,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-3 py-1.5 text-sm rounded-md border border-(--color-border) disabled:opacity-40 hover:bg-[var(--color-bg-sunken)] transition-colors text-text-body"
+          className="px-3 py-1.5 text-sm rounded-md border border-(--color-border) disabled:opacity-40 hover:bg-(--color-bg-sunken) transition-colors text-text-body"
         >
           Previous
         </button>
@@ -36,7 +36,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="px-3 py-1.5 text-sm rounded-md border border-(--color-border) disabled:opacity-40 hover:bg-[var(--color-bg-sunken)] transition-colors text-text-body"
+          className="px-3 py-1.5 text-sm rounded-md border border-(--color-border) disabled:opacity-40 hover:bg-(--color-bg-sunken) transition-colors text-text-body"
         >
           Next
         </button>
