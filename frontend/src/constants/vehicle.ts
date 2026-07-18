@@ -33,6 +33,14 @@ export const VEHICLE_TYPES: SelectOption[] = [
     label: "Suv",
     value: "suv",
   },
+  {
+    label: "Electric",
+    value: "electric",
+  },
+  {
+    label: "Dirt-Bike",
+    value: "Dirt-Bike",
+  },
 ];
 
 export const initialFormData: VehicleFormData = {

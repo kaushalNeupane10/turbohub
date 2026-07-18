@@ -9,13 +9,15 @@ from .permissions import IsOwnerOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.utils.dateparse import parse_date
-
+from apps.common.pagination import TurboHubPagination
 
 class VehicleViewSet(viewsets.ModelViewSet):
 
     queryset = Vehicle.objects.select_related("owner").all()
 
     serializer_class = VehicleSerializer
+
+    pagination_class = TurboHubPagination
 
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,

@@ -44,7 +44,7 @@ export default function VehicleManagementPage() {
     error,
   } = useFetchVehicles({
     page,
-    limit: 2,
+    limit: 4,
     search: debouncedSearch || undefined,
     status: status || undefined,
     vehicle_type: (category as VehicleCategory) || undefined,

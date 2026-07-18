@@ -6,6 +6,10 @@ class Vehicle(models.Model):
     VEHICLE_TYPE_CHOICES = (
         ("car", "Car"),
         ("bike", "Bike"),
+        ("dirt-bike", "Dirt-Bike"),
+        ("suv", "Suv"),
+        ("electric", "Electric"),
+        ("scooter", "Scooter"),
     )
     STATUS_CHOICES = (
         ("available", "Available"),
