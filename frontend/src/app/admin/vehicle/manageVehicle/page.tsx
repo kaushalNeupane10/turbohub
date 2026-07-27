@@ -10,6 +10,7 @@ import VehicleTable from "@/components/admin/vehicle/VehicleTable";
 import VehicleToolBar from "@/components/admin/vehicle/VehicleToolBar";
 import EmptyState from "@/components/admin/vehicle/EmptyState";
 import VehicleModal from "@/components/admin/vehicle/VehicleModal";
+import DeleteConfirmModal from "@/components/admin/vehicle/DeleteConfirmModal";
 
 import { useFetchVehicles } from "@/hook/admin/vehicle/useFetchVehicle";
 import { useDeleteVehicle } from "@/hook/admin/vehicle/useDeleteVehicle";
@@ -23,7 +24,9 @@ import {
 } from "@/constants/vehicle";
 
 export default function VehicleManagementPage() {
-  // --- States for Filtering & Pagination ---
+  /* ------------------------------------------------------------------ */
+  /* Filter & Pagination State                                            */
+  /* ------------------------------------------------------------------ */
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState("");
@@ -31,12 +34,23 @@ export default function VehicleManagementPage() {
 
   const debouncedSearch = useDebounce(searchQuery, 400);
 
-  // --- Modal States ---
+  /* ------------------------------------------------------------------ */
+  /* Vehicle Modal (create / edit)                                        */
+  /* ------------------------------------------------------------------ */
   const [modalOpen, setModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] =
     useState<VehicleApiResponse | null>(null);
 
-  // --- React Query Fetch ---
+  /* ------------------------------------------------------------------ */
+  /* Delete Confirm Modal                                                 */
+  /* ------------------------------------------------------------------ */
+  const [deleteTarget, setDeleteTarget] = useState<VehicleApiResponse | null>(
+    null,
+  );
+
+  /* ------------------------------------------------------------------ */
+  /* Data Fetching                                                        */
+  /* ------------------------------------------------------------------ */
   const {
     data: response,
     isLoading: isFetchLoading,
@@ -50,10 +64,14 @@ export default function VehicleManagementPage() {
     vehicle_type: (category as VehicleCategory) || undefined,
   });
 
-  // --- React Query Mutations ---
+  /* ------------------------------------------------------------------ */
+  /* Mutations                                                            */
+  /* ------------------------------------------------------------------ */
   const deleteMutation = useDeleteVehicle();
 
-  // --- Actions ---
+  /* ------------------------------------------------------------------ */
+  /* Actions — Create / Edit modal                                       */
+  /* ------------------------------------------------------------------ */
   const handleCreateVehicle = () => {
     setEditingVehicle(null);
     setModalOpen(true);
@@ -69,20 +87,42 @@ export default function VehicleManagementPage() {
     setModalOpen(false);
   };
 
-  const handleDeleteVehicle = async (id: number) => {
-    try {
-      await deleteMutation.mutateAsync(id);
-      toast.success("Vehicle deleted successfully");
+  /* ------------------------------------------------------------------ */
+  /* Actions — Delete flow (two-step via reusable modal)                 */
+  /* ------------------------------------------------------------------ */
+  const handleDeleteRequest = (vehicle: VehicleApiResponse) => {
+    setDeleteTarget(vehicle);
+  };
 
-      // Senior Developer touch: if we deleted the last item on the current page, page backward
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await deleteMutation.mutateAsync(deleteTarget.id);
+      toast.success(`"${deleteTarget.name}" deleted successfully.`);
+
+      // If we deleted the last item on the current page, step back
       if (response && response.results.length === 1 && page > 1) {
         setPage((prev) => prev - 1);
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to delete vehicle");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete vehicle.";
+      toast.error(message);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
+  const handleDeleteCancel = () => {
+    if (!deleteMutation.isPending) {
+      setDeleteTarget(null);
+    }
+  };
+
+  /* ------------------------------------------------------------------ */
+  /* Actions — Filters                                                   */
+  /* ------------------------------------------------------------------ */
   const handleClearFilters = () => {
     setSearchQuery("");
     setStatus("");
@@ -92,33 +132,38 @@ export default function VehicleManagementPage() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setPage(1); // reset to page 1 on new search
+    setPage(1);
   };
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
-    setPage(1); // reset to page 1 on filter change
+    setPage(1);
   };
 
   const handleCategoryChange = (value: string) => {
     setCategory(value);
-    setPage(1); // reset to page 1 on filter change
+    setPage(1);
   };
 
+  /* ------------------------------------------------------------------ */
+  /* Derived                                                              */
+  /* ------------------------------------------------------------------ */
   const hasFilters =
     Boolean(searchQuery) || Boolean(status) || Boolean(category);
   const vehicles = response?.results || [];
 
+  /* ------------------------------------------------------------------ */
+  /* Render                                                               */
+  /* ------------------------------------------------------------------ */
   return (
     <section className="container-main py-8 md:py-12 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="mb-8 space-y-6">
+      {/* Page Header */}
+      <div className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-text-heading">
               Vehicle Management
             </h1>
-
             <p className="mt-2 text-sm text-text-muted max-w-xl">
               Manage TurboHub rental vehicles, availability, categories, and
               vehicle inventory.
@@ -130,14 +175,13 @@ export default function VehicleManagementPage() {
             className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground shadow-brand transition-all duration-200 hover:bg-brand-dark active:scale-[0.98]"
           >
             <Plus size={18} />
-
             <span>Add Vehicle</span>
           </button>
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="overflow-hidden rounded-3xl border border-border-subtle bg-surface shadow-md">
+      {/* Main Content Card */}
+      <div className="overflow-hidden rounded-3xl border border-border-subtle bg-bg-surface shadow-md">
         {/* Toolbar */}
         <VehicleToolBar
           searchQuery={searchQuery}
@@ -169,7 +213,7 @@ export default function VehicleManagementPage() {
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <p className="text-error font-medium mb-4">
               Error fetching vehicles:{" "}
-              {error?.message || "Something went wrong."}
+              {(error as Error)?.message || "Something went wrong."}
             </p>
             <button
               onClick={handleClearFilters}
@@ -190,7 +234,7 @@ export default function VehicleManagementPage() {
                 : null,
             }}
             onEdit={handleEditVehicle}
-            onDelete={handleDeleteVehicle}
+            onDeleteRequest={handleDeleteRequest}
           />
         )}
 
@@ -211,13 +255,22 @@ export default function VehicleManagementPage() {
           )}
       </div>
 
-      {/* vehicle modal pop up */}
+      {/* Vehicle Create / Edit Modal */}
       <VehicleModal
         open={modalOpen}
         mode={editingVehicle ? "edit" : "create"}
         vehicle={editingVehicle}
         initialValues={initialFormData}
         onClose={handleCloseModal}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        open={Boolean(deleteTarget)}
+        vehicleName={deleteTarget?.name ?? ""}
+        isDeleting={deleteMutation.isPending}
+        onConfirm={handleDeleteConfirm}
+        onClose={handleDeleteCancel}
       />
     </section>
   );

@@ -30,6 +30,7 @@ export default function VehicleModal({
     handleChange,
     handleImagesChange,
     handleSubmit,
+    resetForm,
   } = useVehicleForm({
     mode,
     vehicle,
@@ -37,10 +38,14 @@ export default function VehicleModal({
     onClose,
   });
 
-  // handle image change
+  // handle close
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
 
   return (
-    <Modal open={open} onClose={onClose} size="lg">
+    <Modal open={open} onClose={handleClose} size="lg">
       <Modal.Header>
         {mode === "create" ? "Add Vehicle" : "Edit Vehicle"}
       </Modal.Header>
@@ -55,7 +60,7 @@ export default function VehicleModal({
       </Modal.Body>
 
       <Modal.Footer>
-        <Button type="button" onClick={onClose}>
+        <Button type="button" onClick={handleClose}>
           Cancel
         </Button>
 

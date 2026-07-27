@@ -29,7 +29,7 @@ export default function VehicleToolBar({
   onClearFilters,
 }: VehicleToolbarProps) {
   return (
-    <div className="border-b border-border-subtle bg-surface p-4 sm:p-5">
+    <div className="border-b border-border-subtle bg-bg-surface p-4 sm:p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         {/* Search Wrapper: Scales clean across viewports */}
         <div className="w-full md:max-w-xs lg:max-w-md">
