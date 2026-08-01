@@ -13,7 +13,7 @@ from apps.common.pagination import TurboHubPagination
 
 class VehicleViewSet(viewsets.ModelViewSet):
 
-    queryset = Vehicle.objects.select_related("owner").all()
+    queryset = Vehicle.objects.select_related("owner").prefetch_related("images__media").all()
 
     serializer_class = VehicleSerializer
 
@@ -73,7 +73,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
         vehicles = Vehicle.objects.filter(
             owner=request.user
-        )
+        ).prefetch_related("images__media")
 
         serializer = self.get_serializer(
             vehicles,

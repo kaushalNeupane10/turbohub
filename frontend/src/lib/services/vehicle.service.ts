@@ -21,16 +21,26 @@ class VehicleService {
   }
 
   async createVehicle(payload: VehicleFormData): Promise<VehicleApiResponse> {
+    const { images, ...rest } = payload;
+    const apiPayload = {
+      ...rest,
+      image_ids: images.map(img => img.id)
+    };
     return apiClient(API_ENDPOINTS.VEHICLES, {
       method: "POST",
-      data: payload,
+      data: apiPayload,
     });
   }
 
   async updateVehicle(id: number, payload: VehicleFormData) {
+    const { images, ...rest } = payload;
+    const apiPayload = {
+      ...rest,
+      image_ids: images.map(img => img.id)
+    };
     return apiClient<VehicleApiResponse>(`${API_ENDPOINTS.VEHICLES}${id}/`, {
       method: "PUT",
-      data: payload,
+      data: apiPayload,
     });
   }
 
