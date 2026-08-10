@@ -38,15 +38,8 @@ export default function VehicleCardSkeleton() {
             <div className="h-3 w-5/6 rounded bg-bg-elevated" />
           </div>
 
-          {/* features */}
-          <div className="mt-5 grid grid-cols-3 gap-2 rounded-xl border border-border/40 bg-bg-page/80 p-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <div className="h-5 w-5 rounded bg-bg-elevated" />
-                <div className="h-3 w-12 rounded bg-bg-elevated" />
-              </div>
-            ))}
-          </div>
+          {/* location row */}
+          <div className="mt-4 h-3 w-32 rounded bg-bg-elevated" />
         </div>
 
         {/* FOOTER */}

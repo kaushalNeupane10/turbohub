@@ -16,7 +16,6 @@ class VehicleService {
         params,
       },
     );
-    console.log("vehicleData:", data);
     return data;
   }
 

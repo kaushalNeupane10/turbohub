@@ -34,7 +34,13 @@ class Vehicle(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="available"
+        default="available",
+        db_index=True,
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Manually mark this vehicle as featured on the public homepage.",
     )
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     review_count = models.PositiveIntegerField(default=0)

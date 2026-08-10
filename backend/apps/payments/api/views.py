@@ -105,6 +105,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         import stripe
         from django.conf import settings
+        from rest_framework import status as drf_status
 
 
         payload = request.body
@@ -113,16 +114,22 @@ class PaymentViewSet(viewsets.ModelViewSet):
             "HTTP_STRIPE_SIGNATURE"
         )
 
-
-        event = stripe.Webhook.construct_event(
-
-            payload,
-
-            signature,
-
-            settings.STRIPE_WEBHOOK_SECRET
-
-        )
+        try:
+            event = stripe.Webhook.construct_event(
+                payload,
+                signature,
+                settings.STRIPE_WEBHOOK_SECRET,
+            )
+        except stripe.error.SignatureVerificationError:
+            return Response(
+                {"error": "Invalid signature"},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception:
+            return Response(
+                {"error": "Webhook error"},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
 
 
         if event["type"] == "checkout.session.completed":
@@ -131,34 +138,30 @@ class PaymentViewSet(viewsets.ModelViewSet):
             session = event["data"]["object"]
 
 
-            payment_id = session["metadata"]["payment_id"]
+            payment_id = session["metadata"].get("payment_id")
 
+            if not payment_id:
+                return Response({"received": True})
 
-            payment = Payment.objects.get(
-                id=payment_id
-            )
+            try:
+                payment = Payment.objects.select_related("booking").get(
+                    id=payment_id
+                )
+            except Payment.DoesNotExist:
+                return Response({"received": True})
 
 
             payment.status = "successful"
-
-
+            payment.transaction_id = session.get("payment_intent")
             payment.save(
-                update_fields=[
-                    "status"
-                ]
+                update_fields=["status", "transaction_id"]
             )
 
 
             booking = payment.booking
-
-
             booking.status = "confirmed"
-
-
             booking.save(
-                update_fields=[
-                    "status"
-                ]
+                update_fields=["status"]
             )
 
 
