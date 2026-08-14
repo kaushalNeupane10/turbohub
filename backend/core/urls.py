@@ -17,6 +17,7 @@ urlpatterns = [
     # Private — requires authentication (admin dashboard)
     path('api/vehicles/', include('apps.vehicles.api.urls')),
     path('api/bookings/', include('apps.bookings.api.urls')),
+    path('api/reviews/', include('apps.reviews.api.urls')),
     path('api/payments/', include('apps.payments.api.urls')),
     path('api/media/', include('media_manager.api.urls')),
 

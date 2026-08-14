@@ -139,6 +139,7 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
 
-        serializer.save(
-            user=self.request.user
-        )
+        # The serializer assigns the user from the request context in its
+        # create() method, so we must NOT pass user= here — doing so would
+        # supply `user` twice to Booking.objects.create() (TypeError).
+        serializer.save()
