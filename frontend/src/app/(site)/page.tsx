@@ -1,3 +1,4 @@
+import AllVehiclesSection from "@/components/user/homePage/AllVehiclesSection";
 import ExperienceSection from "@/components/user/homePage/ExperienceSection";
 import FaqSection from "@/components/user/homePage/FaqSection";
 import FeaturedVehiclesSection from "@/components/user/homePage/FeaturedVehiclesSection";
@@ -12,6 +13,7 @@ export default function page() {
       <Hero />
       <TopRentedSection />
       <FeaturedVehiclesSection />
+      <AllVehiclesSection />
       <ExperienceSection />
       <HowItWorksSection />
       <FaqSection />

@@ -16,6 +16,7 @@ export interface BookingApiResponse {
   end_date: string; // ISO date (YYYY-MM-DD)
   total_price: string;
   status: BookingStatus;
+  payment_id?: number | null;
   created_at: string;
   updated_at: string;
 }

@@ -88,4 +88,6 @@ export interface PublicVehicleListParams {
   vehicle_type?: VehicleCategory | "";
   location?: string;
   ordering?: string;
+  /** Comma-separated vehicle IDs to exclude (used to avoid duplicating top-rented). */
+  exclude_ids?: string;
 }

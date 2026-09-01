@@ -42,10 +42,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
             )
 
 
-        if booking.status != "approved":
+        if booking.status not in ["approved", "confirmed"]:
 
             raise ValidationError(
-                "Booking must be approved before payment"
+                "Booking must be approved or confirmed before payment"
             )
 
 

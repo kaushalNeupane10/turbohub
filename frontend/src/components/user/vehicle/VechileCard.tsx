@@ -161,13 +161,13 @@ export default function VehicleCard({
         </div>
 
         {/* Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-border/40 pt-4">
-          <div>
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/40 pt-4">
+          <div className="min-w-0">
             <span className="block text-xs font-bold uppercase text-text-muted">
               Daily Rate
             </span>
-            <span className="text-2xl font-black text-brand">
-              ${vehicle.pricePerDay.toFixed(0)}
+            <span className="text-xl font-black tabular-nums text-brand">
+              ${vehicle.pricePerDay.toLocaleString("en-US", { maximumFractionDigits: 0 })}
               <span className="text-sm font-medium text-text-body">/day</span>
             </span>
           </div>
@@ -177,14 +177,14 @@ export default function VehicleCard({
             href={detailHref}
             aria-label={`Book ${vehicle.name}`}
             className={clsx(
-              "flex items-center gap-2 rounded-xl px-5 py-3 font-bold transition-all",
+              "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition-all",
               vehicle.available
                 ? "bg-brand text-brand-foreground hover:bg-brand-dark hover:shadow-brand"
                 : "bg-bg-sunken text-text-muted hover:bg-bg-elevated",
             )}
           >
-            {vehicle.available ? "Book Now" : "View Details"}
-            <ChevronRight size={16} />
+            {vehicle.available ? "Book Now" : "Details"}
+            <ChevronRight size={14} />
           </Link>
         </div>
       </div>

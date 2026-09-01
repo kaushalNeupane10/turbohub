@@ -58,7 +58,7 @@ from .public_serializers import PublicVehicleSerializer
 # ─── Algorithm weights ────────────────────────────────────────────────────────
 # Override in settings.py if you want to tune ranking without a code deploy.
 WEIGHT_BOOKINGS: float = getattr(settings, "TOP_RENTED_WEIGHT_BOOKINGS", 1.0)
-WEIGHT_RATING: float = getattr(settings, "TOP_RENTED_WEIGHT_RATING", 2.0)
+WEIGHT_RATING: float = getattr(settings, "TOP_RENTED_WEIGHT_RATING", 2.5)
 WEIGHT_RECENCY: float = getattr(settings, "TOP_RENTED_WEIGHT_RECENCY", 1.5)
 TOP_RENTED_LIMIT: int = getattr(settings, "TOP_RENTED_LIMIT", 8)
 TOP_RENTED_WINDOW_DAYS: int = getattr(settings, "TOP_RENTED_WINDOW_DAYS", 7)
@@ -87,12 +87,27 @@ class PublicVehicleViewSet(ReadOnlyModelViewSet):
         Base queryset for the public API:
           - Only available vehicles
           - Optimised with select_related / prefetch_related to avoid N+1
+          - Supports ?exclude_ids=1,2,3 to omit specific vehicle IDs (used by
+            the home page to avoid showing top-rented vehicles in the "all" grid)
         """
-        return (
+        qs = (
             Vehicle.objects.filter(status="available")
             .select_related("owner")
             .prefetch_related("images__media")
         )
+
+        exclude_ids_raw = self.request.query_params.get("exclude_ids", "")
+        if exclude_ids_raw:
+            try:
+                exclude_ids = [
+                    int(x.strip()) for x in exclude_ids_raw.split(",") if x.strip()
+                ]
+                if exclude_ids:
+                    qs = qs.exclude(pk__in=exclude_ids)
+            except (ValueError, TypeError):
+                pass  # silently ignore malformed exclude_ids
+
+        return qs
 
     # ─── Extra actions ─────────────────────────────────────────────────────
 
@@ -220,10 +235,21 @@ class PublicVehicleViewSet(ReadOnlyModelViewSet):
                 + recency * WEIGHT_RECENCY
             )
 
-        # Evaluate queryset once, score and sort in Python
+        # Evaluate queryset once, score and sort in Python.
+        # Minimum threshold: only rank vehicles that have at least 1 booking
+        # this week OR a rating >= 3.0 — prevents unbooked/unrated vehicles
+        # from appearing in "Top Rented".
+        MIN_RATING = getattr(settings, "TOP_RENTED_MIN_RATING", 3.0)
+        MIN_BOOKINGS = getattr(settings, "TOP_RENTED_MIN_BOOKINGS", 1)
+
         vehicles = list(queryset)
-        vehicles.sort(key=_score, reverse=True)
-        top_vehicles = vehicles[:TOP_RENTED_LIMIT]
+        qualified = [
+            v for v in vehicles
+            if (v.booking_count_this_week or 0) >= MIN_BOOKINGS
+            or float(v.rating or 0) >= MIN_RATING
+        ]
+        qualified.sort(key=_score, reverse=True)
+        top_vehicles = qualified[:TOP_RENTED_LIMIT]
 
         serializer = self.get_serializer(top_vehicles, many=True)
         return Response(serializer.data)

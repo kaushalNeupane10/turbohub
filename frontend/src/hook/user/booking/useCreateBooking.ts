@@ -6,9 +6,8 @@ import { CreateBookingPayload } from "@/types/booking.types";
 /**
  * Creates a booking request for a vehicle.
  *
- * The backend flow is: booking (pending) → owner approves → payment.
- * So this mutation only submits the rental request; payment happens later
- * via useBookingCheckout once the owner approves.
+ * For available vehicles, the booking is instantly confirmed and returns
+ * a payment_id so the user can immediately complete Stripe payment.
  *
  * Invalidates the user's booking list on success.
  */

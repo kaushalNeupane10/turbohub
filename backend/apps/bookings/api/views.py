@@ -138,8 +138,14 @@ class BookingViewSet(viewsets.ModelViewSet):
 
 
     def perform_create(self, serializer):
-
-        # The serializer assigns the user from the request context in its
-        # create() method, so we must NOT pass user= here — doing so would
-        # supply `user` twice to Booking.objects.create() (TypeError).
-        serializer.save()
+        booking = serializer.save()
+        if booking.status in ["confirmed", "approved"]:
+            from apps.payments.models import Payment
+            payment, _ = Payment.objects.get_or_create(
+                booking=booking,
+                defaults={
+                    "user": self.request.user,
+                    "amount": booking.total_price,
+                }
+            )
+            booking._instant_payment_id = payment.id
