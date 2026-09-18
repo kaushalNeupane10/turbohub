@@ -6,6 +6,7 @@ import { PublicVehicleListParams, VehicleListParams } from "@/types/vehicle.type
  * Namespacing:
  *   vehicles.*       — private admin vehicle queries (requires auth)
  *   publicVehicles.* — public vehicle showcase queries (no auth required)
+ *   bookings.*       — user booking queries (requires auth)
  *
  * Pattern: coarse → specific, so you can invalidate whole namespaces easily:
  *   queryClient.invalidateQueries({ queryKey: queryKeys.publicVehicles.all })
@@ -35,5 +36,7 @@ export const queryKeys = {
     all: ["bookings"] as const,
     list: ["bookings", "list"] as const,
     detail: (id: string | number) => ["bookings", "detail", id] as const,
+    /** Bookings on vehicles owned by the current user (admin dashboard). */
+    owner: ["bookings", "owner"] as const,
   },
 } as const;

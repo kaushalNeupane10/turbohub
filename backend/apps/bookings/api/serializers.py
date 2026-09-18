@@ -2,6 +2,34 @@ from rest_framework import serializers
 from apps.bookings.models import Booking
 
 
+# ─── Nested read-only serializers ─────────────────────────────────────────────
+
+class BookingVehicleSerializer(serializers.Serializer):
+    """Lightweight vehicle summary embedded in booking detail responses."""
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    vehicle_type = serializers.CharField()
+    price_per_day = serializers.DecimalField(max_digits=10, decimal_places=2)
+    location = serializers.CharField()
+    cover_image = serializers.SerializerMethodField()
+
+    def get_cover_image(self, obj):
+        """Return the URL of the first (cover) image, or None."""
+        first_image = obj.images.order_by("order").first()
+        if first_image and first_image.media:
+            return first_image.media.url
+        return None
+
+
+class BookingUserSerializer(serializers.Serializer):
+    """Lightweight user summary embedded in booking detail responses."""
+    id = serializers.IntegerField()
+    full_name = serializers.CharField()
+    email = serializers.EmailField()
+
+
+# ─── Write serializer (create / update) ──────────────────────────────────────
+
 class BookingSerializer(serializers.ModelSerializer):
 
     # Read-only field: populated in the view after auto-creating a Payment
@@ -108,3 +136,39 @@ class BookingSerializer(serializers.ModelSerializer):
         )
 
         return booking
+
+
+# ─── Read serializer (list / retrieve / action responses) ────────────────────
+
+class BookingDetailSerializer(serializers.ModelSerializer):
+    """
+    Rich read-only serializer used for list, retrieve, and action responses.
+    Includes nested vehicle and user detail objects so the frontend has
+    everything it needs without additional API calls.
+    """
+    payment_id = serializers.SerializerMethodField()
+    vehicle_detail = BookingVehicleSerializer(source="vehicle", read_only=True)
+    user_detail = BookingUserSerializer(source="user", read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = [
+            "id",
+            "user",
+            "vehicle",
+            "start_date",
+            "end_date",
+            "total_price",
+            "status",
+            "payment_id",
+            "vehicle_detail",
+            "user_detail",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_payment_id(self, obj):
+        payment = getattr(obj, "payment", None)
+        if payment:
+            return payment.id
+        return None

@@ -21,6 +21,34 @@ export interface BookingApiResponse {
   updated_at: string;
 }
 
+// ─── Nested detail types (read-only, returned by BookingDetailSerializer) ────
+
+/** Lightweight vehicle summary embedded in booking detail responses. */
+export interface BookingVehicleDetail {
+  id: number;
+  name: string;
+  vehicle_type: string;
+  price_per_day: string;
+  location: string;
+  cover_image: string | null;
+}
+
+/** Lightweight user summary embedded in booking detail responses. */
+export interface BookingUserDetail {
+  id: number;
+  full_name: string;
+  email: string;
+}
+
+/**
+ * Rich booking response with nested vehicle and user details.
+ * Used by list, retrieve, and action endpoints.
+ */
+export interface BookingDetailResponse extends BookingApiResponse {
+  vehicle_detail: BookingVehicleDetail;
+  user_detail: BookingUserDetail;
+}
+
 /** Payload accepted when creating a booking. total_price/status are server-derived. */
 export interface CreateBookingPayload {
   vehicle: number;
