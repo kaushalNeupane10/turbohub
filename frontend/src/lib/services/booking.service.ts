@@ -18,6 +18,12 @@ import {
 export interface OwnerBookingListParams {
   page?: number;
   page_size?: number;
+  /** Filter by booking status (server-side). */
+  status?: string;
+  /** Filter by vehicle type (server-side). */
+  vehicle_type?: string;
+  /** Full-text search on renter name, email or vehicle name (server-side). */
+  search?: string;
 }
 
 class BookingService {
@@ -97,6 +103,34 @@ class BookingService {
     return apiClient<BookingDetailResponse>(
       `${API_ENDPOINTS.BOOKINGS}${id}/refund/`,
       { method: "POST" },
+    );
+  }
+
+  /**
+   * Checks out a vehicle (marks as picked up by customer).
+   * Transitions status from 'approved' to 'confirmed'.
+   */
+  async checkoutBooking(
+    id: number,
+    payload: BookingActionPayload = {},
+  ): Promise<BookingDetailResponse> {
+    return apiClient<BookingDetailResponse>(
+      `${API_ENDPOINTS.BOOKINGS}${id}/checkout/`,
+      { method: "PATCH", data: { notes: payload.notes ?? "" } },
+    );
+  }
+
+  /**
+   * Checks in a returned vehicle (marks as dropped off by customer).
+   * Transitions status from 'confirmed' to 'completed'.
+   */
+  async returnBooking(
+    id: number,
+    payload: BookingActionPayload = {},
+  ): Promise<BookingDetailResponse> {
+    return apiClient<BookingDetailResponse>(
+      `${API_ENDPOINTS.BOOKINGS}${id}/return/`,
+      { method: "PATCH", data: { notes: payload.notes ?? "" } },
     );
   }
 

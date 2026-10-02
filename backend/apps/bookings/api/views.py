@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -65,6 +66,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         if self.action in (
             "list", "retrieve", "owner_bookings",
             "approve_booking", "decline_booking", "cancel_booking", "refund_booking",
+            "checkout_booking", "return_booking",
         ):
             return BookingDetailSerializer
         return BookingSerializer
@@ -76,7 +78,9 @@ class BookingViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return qs.all()
 
-        return qs.filter(user=user)
+        return qs.filter(
+            Q(user=user) | Q(vehicle__owner=user)
+        ).distinct()
 
     # ── Owner bookings (for admin / vehicle-owner dashboard) ──────────
 
@@ -90,9 +94,28 @@ class BookingViewSet(viewsets.ModelViewSet):
         Returns a paginated list of bookings for vehicles owned by the
         current user, ordered newest-first.
         """
-        bookings = _booking_qs().filter(
+        qs = _booking_qs().filter(
             vehicle__owner=request.user,
-        ).order_by("-created_at")
+        )
+
+        # ── Optional server-side filters ──────────────────────────────
+        status_filter = request.query_params.get("status", "").strip()
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+
+        vehicle_type_filter = request.query_params.get("vehicle_type", "").strip()
+        if vehicle_type_filter:
+            qs = qs.filter(vehicle__vehicle_type=vehicle_type_filter)
+
+        search = request.query_params.get("search", "").strip()
+        if search:
+            qs = qs.filter(
+                Q(user__full_name__icontains=search)
+                | Q(user__email__icontains=search)
+                | Q(vehicle__name__icontains=search)
+            )
+
+        bookings = qs.order_by("-created_at")
 
         paginator = BookingPageNumberPagination()
         page = paginator.paginate_queryset(bookings, request, view=self)
@@ -216,6 +239,78 @@ class BookingViewSet(viewsets.ModelViewSet):
 
         payment.status = "refunded"
         payment.save(update_fields=["status", "updated_at"])
+
+        booking.refresh_from_db()
+        serializer = self.get_serializer(booking)
+        return Response(serializer.data)
+
+    # ── Checkout vehicle (pick-up) ────────────────────────────────────
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="checkout",
+    )
+    def checkout_booking(self, request, pk=None):
+        """
+        Mark vehicle as checked out (picked up by renter).
+        Transitions status from 'approved' to 'confirmed'.
+        Vehicle owner or staff only. Accepts optional 'notes'.
+        """
+        booking = self.get_object()
+
+        if booking.vehicle.owner != request.user and not request.user.is_staff:
+            raise PermissionDenied(
+                "Only the vehicle owner can check out vehicles."
+            )
+
+        if booking.status != "approved":
+            raise ValidationError(
+                "Only approved bookings can be checked out."
+            )
+
+        notes = request.data.get("notes", "").strip()
+        if notes:
+            booking.owner_notes = notes
+
+        booking.status = "confirmed"
+        booking.save(update_fields=["status", "owner_notes", "updated_at"])
+
+        booking.refresh_from_db()
+        serializer = self.get_serializer(booking)
+        return Response(serializer.data)
+
+    # ── Return vehicle (drop-off / check-in) ──────────────────────────
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="return",
+    )
+    def return_booking(self, request, pk=None):
+        """
+        Mark vehicle as returned (dropped off by renter).
+        Transitions status from 'confirmed' to 'completed'.
+        Vehicle owner or staff only. Accepts optional 'notes'.
+        """
+        booking = self.get_object()
+
+        if booking.vehicle.owner != request.user and not request.user.is_staff:
+            raise PermissionDenied(
+                "Only the vehicle owner can check in returned vehicles."
+            )
+
+        if booking.status != "confirmed":
+            raise ValidationError(
+                "Only confirmed (checked-out) bookings can be returned."
+            )
+
+        notes = request.data.get("notes", "").strip()
+        if notes:
+            booking.owner_notes = notes
+
+        booking.status = "completed"
+        booking.save(update_fields=["status", "owner_notes", "updated_at"])
 
         booking.refresh_from_db()
         serializer = self.get_serializer(booking)

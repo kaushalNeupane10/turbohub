@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import {
   CalendarCheck,
   Clock,
-  CheckCircle2,
   Ban,
   ShieldCheck,
   AlertTriangle,
@@ -23,10 +22,13 @@ import {
   useApproveBooking,
   useDeclineBooking,
   useRefundBooking,
+  useCheckoutBooking,
+  useReturnBooking,
 } from "@/hook/admin/bookings/useBookingActions";
 import { useDebounce } from "@/hook/common/useDebounce";
 
 import { BookingDetailResponse, BookingStatus } from "@/types/booking.types";
+import { VehicleCategory } from "@/types/vehicle.types";
 import { PaginationMeta } from "@/types/common/pagination";
 
 const PAGE_SIZE = 4;
@@ -43,7 +45,9 @@ interface StatCardProps {
 function StatCard({ label, count, icon: Icon, colorClass }: StatCardProps) {
   return (
     <div className="flex items-center gap-4 rounded-2xl border border-border-subtle bg-bg-surface px-5 py-4 shadow-sm">
-      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${colorClass}`}>
+      <div
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${colorClass}`}
+      >
         <Icon size={20} />
       </div>
       <div>
@@ -63,18 +67,27 @@ export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<BookingStatus | "">("");
+  const [vehicleTypeFilter, setVehicleTypeFilter] = useState<
+    VehicleCategory | ""
+  >("");
   const [selectedBooking, setSelectedBooking] =
     useState<BookingDetailResponse | null>(null);
 
-  const debouncedSearch = useDebounce(search, 300);
+  const debouncedSearch = useDebounce(search, 400);
 
-  /* ── Data ──────────────────────────────────────────────────────────── */
+  /* ── Data (server-side filtered + paginated) ────────────────────────── */
   const {
     data: response,
     isLoading,
     isError,
     error,
-  } = useFetchOwnerBookings({ page, page_size: PAGE_SIZE });
+  } = useFetchOwnerBookings({
+    page,
+    page_size: PAGE_SIZE,
+    status: statusFilter || undefined,
+    vehicle_type: vehicleTypeFilter || undefined,
+    search: debouncedSearch || undefined,
+  });
 
   const allBookings = response?.results ?? [];
 
@@ -82,20 +95,8 @@ export default function BookingsPage() {
   const approveMutation = useApproveBooking();
   const declineMutation = useDeclineBooking();
   const refundMutation = useRefundBooking();
-
-  /* ── Derived / filtered data ───────────────────────────────────────── */
-  const filteredBookings = useMemo(() => {
-    return allBookings.filter((b) => {
-      const matchesStatus = !statusFilter || b.status === statusFilter;
-      const q = debouncedSearch.toLowerCase();
-      const matchesSearch =
-        !q ||
-        b.user_detail?.full_name?.toLowerCase().includes(q) ||
-        b.user_detail?.email?.toLowerCase().includes(q) ||
-        b.vehicle_detail?.name?.toLowerCase().includes(q);
-      return matchesStatus && matchesSearch;
-    });
-  }, [allBookings, statusFilter, debouncedSearch]);
+  const checkoutMutation = useCheckoutBooking();
+  const returnMutation = useReturnBooking();
 
   /* ── Pagination meta ────────────────────────────────────────────────── */
   const pagination: PaginationMeta | null = response
@@ -111,13 +112,18 @@ export default function BookingsPage() {
   const stats = useMemo(() => {
     const total = response?.count ?? 0;
     const pending = allBookings.filter((b) => b.status === "pending").length;
-    const confirmed = allBookings.filter((b) => b.status === "confirmed").length;
-    const cancelled = allBookings.filter((b) => b.status === "cancelled").length;
+    const confirmed = allBookings.filter(
+      (b) => b.status === "confirmed",
+    ).length;
+    const cancelled = allBookings.filter(
+      (b) => b.status === "cancelled",
+    ).length;
     const approved = allBookings.filter((b) => b.status === "approved").length;
     return { total, pending, confirmed, cancelled, approved };
   }, [allBookings, response]);
 
   /* ── Handlers ──────────────────────────────────────────────────────── */
+
   const handleApprove = async (id: number, notes: string) => {
     try {
       const updated = await approveMutation.mutateAsync({
@@ -125,13 +131,11 @@ export default function BookingsPage() {
         payload: { notes },
       });
       toast.success("Booking approved.");
-      if (selectedBooking?.id === id) {
-        setSelectedBooking(updated);
-      }
+      if (selectedBooking?.id === id) setSelectedBooking(updated);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to approve booking.";
-      toast.error(msg);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to approve booking.",
+      );
     }
   };
 
@@ -142,13 +146,11 @@ export default function BookingsPage() {
         payload: { notes },
       });
       toast.success("Booking declined.");
-      if (selectedBooking?.id === id) {
-        setSelectedBooking(updated);
-      }
+      if (selectedBooking?.id === id) setSelectedBooking(updated);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to decline booking.";
-      toast.error(msg);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to decline booking.",
+      );
     }
   };
 
@@ -156,29 +158,73 @@ export default function BookingsPage() {
     try {
       const updated = await refundMutation.mutateAsync(id);
       toast.success("Payment refunded successfully.");
-      if (selectedBooking?.id === id) {
-        setSelectedBooking(updated);
-      }
+      if (selectedBooking?.id === id) setSelectedBooking(updated);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Failed to refund payment.";
-      toast.error(msg);
+      toast.error(
+        err instanceof Error ? err.message : "Failed to refund payment.",
+      );
+    }
+  };
+
+  const handleCheckout = async (id: number, notes: string) => {
+    try {
+      const updated = await checkoutMutation.mutateAsync({
+        bookingId: id,
+        payload: { notes },
+      });
+      toast.success("Vehicle marked as picked up.");
+      if (selectedBooking?.id === id) setSelectedBooking(updated);
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to mark pickup.",
+      );
+    }
+  };
+
+  const handleReturn = async (id: number, notes: string) => {
+    try {
+      const updated = await returnMutation.mutateAsync({
+        bookingId: id,
+        payload: { notes },
+      });
+      toast.success("Vehicle marked as returned.");
+      if (selectedBooking?.id === id) setSelectedBooking(updated);
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to mark return.",
+      );
     }
   };
 
   const handleClearFilters = () => {
     setSearch("");
     setStatusFilter("");
+    setVehicleTypeFilter("");
+    setPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    // Reset client-side filters on page change
-    setSearch("");
-    setStatusFilter("");
   };
 
-  const hasFilters = Boolean(search) || Boolean(statusFilter);
+  const hasFilters = Boolean(search) || Boolean(statusFilter) || Boolean(vehicleTypeFilter);
+
+  /* ── Mutation loading IDs ───────────────────────────────────────────── */
+  const approvingId = approveMutation.isPending
+    ? (approveMutation.variables as { bookingId: number })?.bookingId
+    : null;
+  const decliningId = declineMutation.isPending
+    ? (declineMutation.variables as { bookingId: number })?.bookingId
+    : null;
+  const refundingId = refundMutation.isPending
+    ? (refundMutation.variables as number)
+    : null;
+  const checkingOutId = checkoutMutation.isPending
+    ? (checkoutMutation.variables as { bookingId: number })?.bookingId
+    : null;
+  const returningId = returnMutation.isPending
+    ? (returnMutation.variables as { bookingId: number })?.bookingId
+    : null;
 
   /* ── Render ─────────────────────────────────────────────────────────── */
   return (
@@ -191,8 +237,8 @@ export default function BookingsPage() {
               Booking Management
             </h1>
             <p className="mt-2 text-sm text-text-muted max-w-xl">
-              Review and manage rental requests for your vehicles. Approve or
-              decline pending bookings and cross-verify payment details.
+              Review and manage rental requests for your vehicles. Approve,
+              track pickup &amp; drop-off, and handle payment refunds.
             </p>
           </div>
 
@@ -243,9 +289,20 @@ export default function BookingsPage() {
         <BookingFilters
           search={search}
           status={statusFilter}
+          vehicleType={vehicleTypeFilter}
           hasFilters={hasFilters}
-          onSearchChange={(v) => setSearch(v)}
-          onStatusChange={(v) => setStatusFilter(v)}
+          onSearchChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          onStatusChange={(v) => {
+            setStatusFilter(v);
+            setPage(1);
+          }}
+          onVehicleTypeChange={(v) => {
+            setVehicleTypeFilter(v);
+            setPage(1);
+          }}
           onClearFilters={handleClearFilters}
         />
 
@@ -272,7 +329,7 @@ export default function BookingsPage() {
         )}
 
         {/* Empty state */}
-        {!isLoading && !isError && filteredBookings.length === 0 && (
+        {!isLoading && !isError && allBookings.length === 0 && (
           <BookingEmptyState
             hasFilters={hasFilters}
             onClearFilters={handleClearFilters}
@@ -280,28 +337,20 @@ export default function BookingsPage() {
         )}
 
         {/* Table */}
-        {!isLoading && !isError && filteredBookings.length > 0 && (
+        {!isLoading && !isError && allBookings.length > 0 && (
           <BookingTable
-            bookings={filteredBookings}
-            approvingId={
-              approveMutation.isPending
-                ? (approveMutation.variables as { bookingId: number })?.bookingId
-                : null
-            }
-            decliningId={
-              declineMutation.isPending
-                ? (declineMutation.variables as { bookingId: number })?.bookingId
-                : null
-            }
-            refundingId={
-              refundMutation.isPending
-                ? (refundMutation.variables as number)
-                : null
-            }
+            bookings={allBookings}
+            approvingId={approvingId ?? null}
+            decliningId={decliningId ?? null}
+            refundingId={refundingId ?? null}
+            checkingOutId={checkingOutId ?? null}
+            returningId={returningId ?? null}
             onView={(b) => setSelectedBooking(b)}
             onApprove={handleApprove}
             onDecline={handleDecline}
             onRefund={handleRefund}
+            onCheckout={handleCheckout}
+            onReturn={handleReturn}
           />
         )}
 
@@ -316,22 +365,25 @@ export default function BookingsPage() {
         open={Boolean(selectedBooking)}
         booking={selectedBooking}
         isApproving={
-          approveMutation.isPending &&
-          (approveMutation.variables as { bookingId: number })?.bookingId ===
-            selectedBooking?.id
+          approveMutation.isPending && approvingId === selectedBooking?.id
         }
         isDeclining={
-          declineMutation.isPending &&
-          (declineMutation.variables as { bookingId: number })?.bookingId ===
-            selectedBooking?.id
+          declineMutation.isPending && decliningId === selectedBooking?.id
         }
         isRefunding={
-          refundMutation.isPending &&
-          (refundMutation.variables as number) === selectedBooking?.id
+          refundMutation.isPending && refundingId === selectedBooking?.id
+        }
+        isCheckingOut={
+          checkoutMutation.isPending && checkingOutId === selectedBooking?.id
+        }
+        isReturning={
+          returnMutation.isPending && returningId === selectedBooking?.id
         }
         onApprove={handleApprove}
         onDecline={handleDecline}
         onRefund={handleRefund}
+        onCheckout={handleCheckout}
+        onReturn={handleReturn}
         onClose={() => setSelectedBooking(null)}
       />
     </section>

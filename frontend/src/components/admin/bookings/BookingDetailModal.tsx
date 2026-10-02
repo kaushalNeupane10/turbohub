@@ -17,11 +17,19 @@ import {
   Banknote,
   Hash,
   Loader2,
+  TruckIcon,
+  CornerDownLeft,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 import Modal from "@/components/ui/modal";
 import Button from "@/components/ui/formFields/Button";
 import BookingStatusBadge from "./BookingStatusBadge";
-import { BookingDetailResponse, BookingPaymentDetail, PaymentStatus } from "@/types/booking.types";
+import {
+  BookingDetailResponse,
+  BookingPaymentDetail,
+  PaymentStatus,
+} from "@/types/booking.types";
 
 interface BookingDetailModalProps {
   open: boolean;
@@ -29,9 +37,13 @@ interface BookingDetailModalProps {
   isApproving: boolean;
   isDeclining: boolean;
   isRefunding: boolean;
+  isCheckingOut: boolean;
+  isReturning: boolean;
   onApprove: (id: number, notes: string) => void;
   onDecline: (id: number, notes: string) => void;
   onRefund: (id: number) => void;
+  onCheckout: (id: number, notes: string) => void;
+  onReturn: (id: number, notes: string) => void;
   onClose: () => void;
 }
 
@@ -116,7 +128,60 @@ function InfoRow({
   );
 }
 
-// ── Inline Payment card ───────────────────────────────────────────────────────
+// ── Notes textarea ────────────────────────────────────────────────────────────
+
+function NotesField({
+  id,
+  value,
+  onChange,
+  disabled,
+  placeholder,
+  label,
+  hint,
+  required,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled: boolean;
+  placeholder: string;
+  label: string;
+  hint?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-4">
+      <div className="flex items-center gap-2 mb-1">
+        <MessageSquare size={14} className="text-text-muted" />
+        <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+          {label}{" "}
+          {!required && (
+            <span className="normal-case font-normal text-text-muted/60">
+              (optional)
+            </span>
+          )}
+        </p>
+      </div>
+      {hint && (
+        <p className="text-xs text-text-muted/60 mb-2 flex items-start gap-1.5">
+          <Info size={11} className="mt-0.5 shrink-0" />
+          {hint}
+        </p>
+      )}
+      <textarea
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        rows={3}
+        placeholder={placeholder}
+        className="w-full resize-none rounded-xl border border-border bg-bg-surface px-4 py-3 text-sm text-text-body placeholder:text-text-muted/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand/50 disabled:opacity-50 transition"
+      />
+    </div>
+  );
+}
+
+// ── Payment Card ──────────────────────────────────────────────────────────────
 
 function PaymentCard({
   payment,
@@ -256,6 +321,155 @@ function PaymentCard({
   );
 }
 
+// ── Decline + Refund notice ───────────────────────────────────────────────────
+
+function DeclineRefundBanner({
+  isPaid,
+  onRefund,
+  isRefunding,
+}: {
+  isPaid: boolean;
+  onRefund: () => void;
+  isRefunding: boolean;
+}) {
+  if (!isPaid) return null;
+  return (
+    <div className="rounded-2xl border border-warning/30 bg-warning/5 px-4 py-4 flex flex-col gap-3">
+      <div className="flex items-start gap-2">
+        <AlertTriangle size={15} className="text-warning mt-0.5 shrink-0" />
+        <div>
+          <p className="text-xs font-semibold text-warning">
+            Payment was collected for this booking
+          </p>
+          <p className="text-xs text-text-muted mt-0.5">
+            Since payment is successful, issuing a refund is required before
+            declining to remain compliant.
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onRefund}
+        disabled={isRefunding}
+        className="self-start inline-flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-xs font-bold text-purple-400 hover:bg-purple-500/20 transition disabled:opacity-50"
+      >
+        {isRefunding ? (
+          <Loader2 size={14} className="animate-spin" />
+        ) : (
+          <RefreshCw size={14} />
+        )}
+        {isRefunding ? "Processing Refund..." : "Refund & then Decline"}
+      </button>
+    </div>
+  );
+}
+
+// ── Pickup / Drop-off track section ──────────────────────────────────────────
+
+function PickupTrackSection({
+  status,
+}: {
+  status: string;
+}) {
+  const steps = [
+    {
+      key: "pending",
+      label: "Request Submitted",
+      icon: Clock,
+      desc: "Renter submitted a booking request",
+    },
+    {
+      key: "approved",
+      label: "Approved",
+      icon: CheckCircle2,
+      desc: "Owner approved the booking request",
+    },
+    {
+      key: "confirmed",
+      label: "Vehicle Picked Up",
+      icon: TruckIcon,
+      desc: "Renter collected the vehicle",
+    },
+    {
+      key: "completed",
+      label: "Vehicle Returned",
+      icon: CornerDownLeft,
+      desc: "Renter dropped off the vehicle",
+    },
+  ];
+
+  const statusOrder = ["pending", "approved", "confirmed", "completed"];
+  const currentIdx = statusOrder.indexOf(status);
+
+  if (!["pending", "approved", "confirmed", "completed"].includes(status)) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
+        Pickup &amp; Drop-off Track
+      </p>
+      <div className="space-y-0">
+        {steps.map((step, idx) => {
+          const Icon = step.icon;
+          const isDone = idx < currentIdx;
+          const isCurrent = idx === currentIdx;
+          const isPending = idx > currentIdx;
+
+          return (
+            <div key={step.key} className="flex gap-3">
+              {/* Connector */}
+              <div className="flex flex-col items-center">
+                <div
+                  className={`
+                    flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all
+                    ${isDone ? "border-success bg-success/10 text-success" : ""}
+                    ${isCurrent ? "border-brand bg-brand/10 text-brand" : ""}
+                    ${isPending ? "border-border-subtle bg-bg-surface text-text-muted/40" : ""}
+                  `}
+                >
+                  <Icon size={13} />
+                </div>
+                {idx < steps.length - 1 && (
+                  <div
+                    className={`w-0.5 flex-1 my-1 min-h-[20px] rounded-full ${
+                      isDone ? "bg-success/40" : "bg-border-subtle"
+                    }`}
+                  />
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="pb-4 min-w-0">
+                <p
+                  className={`text-xs font-semibold ${
+                    isCurrent
+                      ? "text-brand"
+                      : isDone
+                        ? "text-success"
+                        : "text-text-muted/50"
+                  }`}
+                >
+                  {step.label}
+                  {isCurrent && (
+                    <span className="ml-2 inline-flex items-center rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand uppercase tracking-wider">
+                      Current
+                    </span>
+                  )}
+                </p>
+                <p className={`text-xs mt-0.5 ${isPending ? "text-text-muted/40" : "text-text-muted"}`}>
+                  {step.desc}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── component ─────────────────────────────────────────────────────────────────
 
 export default function BookingDetailModal({
@@ -264,18 +478,25 @@ export default function BookingDetailModal({
   isApproving,
   isDeclining,
   isRefunding,
+  isCheckingOut,
+  isReturning,
   onApprove,
   onDecline,
   onRefund,
+  onCheckout,
+  onReturn,
   onClose,
 }: BookingDetailModalProps) {
   const [notes, setNotes] = useState("");
-  const isBusy = isApproving || isDeclining || isRefunding;
+  const isBusy =
+    isApproving || isDeclining || isRefunding || isCheckingOut || isReturning;
 
   if (!booking) return null;
 
   const days = calcDays(booking.start_date, booking.end_date);
   const isPending = booking.status === "pending";
+  const isApproved = booking.status === "approved";
+  const isConfirmed = booking.status === "confirmed";
   const isPaid = booking.payment_detail?.status === "successful";
 
   const handleApprove = () => {
@@ -292,10 +513,45 @@ export default function BookingDetailModal({
     onRefund(booking.id);
   };
 
+  const handleCheckout = () => {
+    onCheckout(booking.id, notes.trim());
+    setNotes("");
+  };
+
+  const handleReturn = () => {
+    onReturn(booking.id, notes.trim());
+    setNotes("");
+  };
+
   const handleClose = () => {
     setNotes("");
     onClose();
   };
+
+  // Determine what notes field label/hint to show contextually
+  const notesConfig = (() => {
+    if (isPending)
+      return {
+        label: "Add Notes",
+        placeholder: "Add a note for the renter explaining your decision…",
+        hint: "This note will be visible to the renter.",
+      };
+    if (isApproved)
+      return {
+        label: "Pickup Notes",
+        placeholder: "e.g. odometer reading, vehicle condition at pickup…",
+        hint: "Document vehicle condition at the time of pickup for your records.",
+      };
+    if (isConfirmed)
+      return {
+        label: "Return Notes",
+        placeholder: "e.g. any damages, odometer reading at return…",
+        hint: "Document vehicle condition at the time of return for your records.",
+      };
+    return null;
+  })();
+
+  const showNotes = isPending || isApproved || isConfirmed;
 
   return (
     <Modal
@@ -389,6 +645,9 @@ export default function BookingDetailModal({
                   }
                 />
               </div>
+
+              {/* Pickup / Drop-off tracker — visible for active bookings */}
+              <PickupTrackSection status={booking.status} />
             </div>
 
             {/* ── Right column ─────────────────────────────────────────── */}
@@ -449,39 +708,40 @@ export default function BookingDetailModal({
                 </div>
               )}
 
+              {/* Decline + refund warning */}
+              {isPending && (
+                <DeclineRefundBanner
+                  isPaid={isPaid}
+                  onRefund={handleRefund}
+                  isRefunding={isRefunding}
+                />
+              )}
+
               {/* Payment detail */}
               <PaymentCard
                 payment={booking.payment_detail}
-                onRefund={isPaid ? handleRefund : undefined}
+                onRefund={isPaid && booking.status !== "cancelled" ? handleRefund : undefined}
                 isRefunding={isRefunding}
               />
             </div>
           </div>
 
-          {/* ── Notes textarea (only for pending) ─────────────────────── */}
-          {isPending && (
-            <div className="rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-4">
-              <div className="flex items-center gap-2 mb-3">
-                <MessageSquare size={14} className="text-text-muted" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Add Notes <span className="normal-case font-normal text-text-muted/60">(optional)</span>
-                </p>
-              </div>
-              <textarea
-                id={`booking-notes-${booking.id}`}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                disabled={isBusy}
-                rows={3}
-                placeholder="Add a note for the renter explaining your decision…"
-                className="w-full resize-none rounded-xl border border-border bg-bg-surface px-4 py-3 text-sm text-text-body placeholder:text-text-muted/60 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand/50 disabled:opacity-50 transition"
-              />
-            </div>
+          {/* ── Contextual notes textarea ─────────────────────────────── */}
+          {showNotes && notesConfig && (
+            <NotesField
+              id={`booking-notes-${booking.id}`}
+              value={notes}
+              onChange={setNotes}
+              disabled={isBusy}
+              label={notesConfig.label}
+              placeholder={notesConfig.placeholder}
+              hint={notesConfig.hint}
+            />
           )}
         </div>
       </Modal.Body>
 
-      {/* Footer */}
+      {/* ── Footer ───────────────────────────────────────────────────── */}
       <Modal.Footer>
         <Button
           type="button"
@@ -492,7 +752,8 @@ export default function BookingDetailModal({
           Close
         </Button>
 
-        {isPaid && (
+        {/* ── Refund (when payment successful & not yet refunded) ── */}
+        {isPaid && booking.status !== "cancelled" && booking.status !== "pending" && (
           <Button
             type="button"
             onClick={handleRefund}
@@ -507,6 +768,7 @@ export default function BookingDetailModal({
           </Button>
         )}
 
+        {/* ── Pending: Approve / Decline ─────────────────────────── */}
         {isPending && (
           <>
             <Button
@@ -535,6 +797,38 @@ export default function BookingDetailModal({
               </span>
             </Button>
           </>
+        )}
+
+        {/* ── Approved: Mark as Picked Up (Checkout) ─────────────── */}
+        {isApproved && (
+          <Button
+            type="button"
+            onClick={handleCheckout}
+            disabled={isBusy}
+            loading={isCheckingOut}
+            className="bg-brand hover:bg-brand-dark text-brand-foreground"
+          >
+            <span className="flex items-center gap-2">
+              <TruckIcon size={14} />
+              {isCheckingOut ? "Processing…" : "Mark as Picked Up"}
+            </span>
+          </Button>
+        )}
+
+        {/* ── Confirmed: Mark as Returned (Drop-off) ─────────────── */}
+        {isConfirmed && (
+          <Button
+            type="button"
+            onClick={handleReturn}
+            disabled={isBusy}
+            loading={isReturning}
+            className="bg-success hover:bg-success/90 text-white"
+          >
+            <span className="flex items-center gap-2">
+              <CornerDownLeft size={14} />
+              {isReturning ? "Processing…" : "Mark as Returned"}
+            </span>
+          </Button>
         )}
       </Modal.Footer>
     </Modal>

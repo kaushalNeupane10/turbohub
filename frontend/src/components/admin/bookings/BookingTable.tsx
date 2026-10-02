@@ -9,6 +9,8 @@ import {
   Loader2,
   RefreshCw,
   Clock,
+  TruckIcon,
+  CornerDownLeft,
 } from "lucide-react";
 import BookingStatusBadge from "./BookingStatusBadge";
 import { BookingDetailResponse, PaymentStatus } from "@/types/booking.types";
@@ -18,10 +20,14 @@ interface BookingTableProps {
   approvingId: number | null;
   decliningId: number | null;
   refundingId: number | null;
+  checkingOutId: number | null;
+  returningId: number | null;
   onView: (booking: BookingDetailResponse) => void;
   onApprove: (id: number, notes: string) => void;
   onDecline: (id: number, notes: string) => void;
   onRefund: (id: number) => void;
+  onCheckout: (id: number, notes: string) => void;
+  onReturn: (id: number, notes: string) => void;
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -48,7 +54,7 @@ function formatPrice(value: string | number) {
   return `Rs ${new Intl.NumberFormat("en-IN").format(num)}`;
 }
 
-// ── Payment Badge helper ─────────────────────────────────────────────────────
+// ── Payment Badge ─────────────────────────────────────────────────────────────
 
 function PaymentBadge({ status }: { status?: PaymentStatus }) {
   if (!status || status === "pending") {
@@ -90,14 +96,18 @@ export default function BookingTable({
   approvingId,
   decliningId,
   refundingId,
+  checkingOutId,
+  returningId,
   onView,
   onApprove,
   onDecline,
   onRefund,
+  onCheckout,
+  onReturn,
 }: BookingTableProps) {
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full min-w-[860px] border-collapse text-left text-sm text-text-body">
+      <table className="w-full min-w-[900px] border-collapse text-left text-sm text-text-body">
         <thead>
           <tr className="border-b border-border-subtle bg-bg-sunken text-xs font-bold uppercase tracking-wider text-text-muted">
             <th className="px-5 py-4">Renter</th>
@@ -115,9 +125,18 @@ export default function BookingTable({
             const isApproving = approvingId === booking.id;
             const isDeclining = decliningId === booking.id;
             const isRefunding = refundingId === booking.id;
-            const isBusy = isApproving || isDeclining || isRefunding;
+            const isCheckingOut = checkingOutId === booking.id;
+            const isReturning = returningId === booking.id;
+            const isBusy =
+              isApproving ||
+              isDeclining ||
+              isRefunding ||
+              isCheckingOut ||
+              isReturning;
 
             const isPending = booking.status === "pending";
+            const isApproved = booking.status === "approved";
+            const isConfirmed = booking.status === "confirmed";
             const isPaid = booking.payment_detail?.status === "successful";
 
             const coverImage = booking.vehicle_detail?.cover_image;
@@ -183,7 +202,7 @@ export default function BookingTable({
                   </div>
                 </td>
 
-                {/* Booked On (created_at) */}
+                {/* Booked On */}
                 <td className="px-5 py-4 whitespace-nowrap">
                   <span className="text-xs text-text-muted">
                     {formatDateTime(booking.created_at)}
@@ -266,8 +285,54 @@ export default function BookingTable({
                       </>
                     )}
 
+                    {/* Checkout (pickup) — for approved bookings */}
+                    {isApproved && (
+                      <button
+                        type="button"
+                        onClick={() => onView(booking)}
+                        disabled={isBusy}
+                        aria-label={`Mark pickup for booking #${booking.id}`}
+                        title="Mark as Picked Up"
+                        className="
+                          inline-flex h-8 items-center gap-1 rounded-lg
+                          border border-brand/30 bg-brand/10 px-2.5 text-xs font-bold text-brand
+                          transition hover:bg-brand/20 disabled:opacity-50 disabled:cursor-not-allowed
+                        "
+                      >
+                        {isCheckingOut ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <TruckIcon size={12} />
+                        )}
+                        <span>Pickup</span>
+                      </button>
+                    )}
+
+                    {/* Return (drop-off) — for confirmed bookings */}
+                    {isConfirmed && (
+                      <button
+                        type="button"
+                        onClick={() => onView(booking)}
+                        disabled={isBusy}
+                        aria-label={`Mark return for booking #${booking.id}`}
+                        title="Mark as Returned"
+                        className="
+                          inline-flex h-8 items-center gap-1 rounded-lg
+                          border border-success/30 bg-success/10 px-2.5 text-xs font-bold text-success
+                          transition hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed
+                        "
+                      >
+                        {isReturning ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <CornerDownLeft size={12} />
+                        )}
+                        <span>Return</span>
+                      </button>
+                    )}
+
                     {/* Refund — available if payment was successful */}
-                    {isPaid && (
+                    {isPaid && booking.status !== "cancelled" && (
                       <button
                         type="button"
                         onClick={() => onRefund(booking.id)}
