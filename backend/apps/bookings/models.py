@@ -48,6 +48,13 @@ class Booking(models.Model):
         default="pending"
     )
 
+    # Notes added by the vehicle owner when approving or declining a booking.
+    owner_notes = models.TextField(
+        blank=True,
+        default="",
+        help_text="Optional note from the vehicle owner explaining the decision.",
+    )
+
 
     created_at = models.DateTimeField(
         auto_now_add=True

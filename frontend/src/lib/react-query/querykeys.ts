@@ -37,6 +37,8 @@ export const queryKeys = {
     list: ["bookings", "list"] as const,
     detail: (id: string | number) => ["bookings", "detail", id] as const,
     /** Bookings on vehicles owned by the current user (admin dashboard). */
-    owner: ["bookings", "owner"] as const,
+    ownerAll: ["bookings", "owner"] as const,
+    owner: (params?: { page?: number; page_size?: number }) =>
+      ["bookings", "owner", params] as const,
   },
 } as const;

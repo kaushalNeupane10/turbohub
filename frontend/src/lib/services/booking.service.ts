@@ -2,21 +2,28 @@
  * BookingService
  *
  * Handles authenticated booking API calls.
- * Backend flow: create booking (pending) → owner approves → payment.
- * Pattern mirrors the existing VehicleService.
+ * Flow: create booking (pending) → customer can pay instantly → owner approves or declines → owner can refund if declined.
  */
 
 import { apiClient, API_ENDPOINTS } from "@/lib/api";
+import { PaginatedResponse } from "@/types/common/pagination";
 import {
   BookingApiResponse,
+  BookingActionPayload,
   BookingDetailResponse,
   CreateBookingPayload,
 } from "@/types/booking.types";
 
+/** Parameters accepted by the owner bookings paginated endpoint. */
+export interface OwnerBookingListParams {
+  page?: number;
+  page_size?: number;
+}
+
 class BookingService {
   /**
    * Creates a booking request for a vehicle.
-   * Server derives total_price (days × price_per_day) and sets status="pending".
+   * Server always sets status="pending"; customer can pay immediately.
    */
   async createBooking(
     payload: CreateBookingPayload,
@@ -27,7 +34,7 @@ class BookingService {
     });
   }
 
-  /** Fetches the current user's bookings with full vehicle/user details. */
+  /** Fetches the current user's bookings with full vehicle/user/payment details. */
   async getMyBookings(): Promise<BookingDetailResponse[]> {
     return apiClient<BookingDetailResponse[]>(API_ENDPOINTS.BOOKINGS);
   }
@@ -39,26 +46,57 @@ class BookingService {
     );
   }
 
-  /** Fetches bookings for vehicles owned by the current user (admin/owner). */
-  async getOwnerBookings(): Promise<BookingDetailResponse[]> {
-    return apiClient<BookingDetailResponse[]>(
+  /**
+   * Fetches a paginated list of bookings for vehicles owned by the current
+   * user (admin / vehicle-owner dashboard).
+   */
+  async getOwnerBookings(
+    params: OwnerBookingListParams = {},
+  ): Promise<PaginatedResponse<BookingDetailResponse>> {
+    return apiClient<PaginatedResponse<BookingDetailResponse>>(
       `${API_ENDPOINTS.BOOKINGS}owner/`,
+      { params },
     );
   }
 
-  /** Approves a pending booking (vehicle owner / admin). */
-  async approveBooking(id: number): Promise<BookingDetailResponse> {
+  /**
+   * Approves a pending booking.
+   * @param id      Booking ID to approve.
+   * @param payload Optional notes explaining the approval.
+   */
+  async approveBooking(
+    id: number,
+    payload: BookingActionPayload = {},
+  ): Promise<BookingDetailResponse> {
     return apiClient<BookingDetailResponse>(
       `${API_ENDPOINTS.BOOKINGS}${id}/approve/`,
-      { method: "PATCH" },
+      { method: "PATCH", data: { notes: payload.notes ?? "" } },
     );
   }
 
-  /** Declines a pending booking (vehicle owner / admin). */
-  async declineBooking(id: number): Promise<BookingDetailResponse> {
+  /**
+   * Declines a pending booking.
+   * @param id      Booking ID to decline.
+   * @param payload Optional notes explaining the reason.
+   */
+  async declineBooking(
+    id: number,
+    payload: BookingActionPayload = {},
+  ): Promise<BookingDetailResponse> {
     return apiClient<BookingDetailResponse>(
       `${API_ENDPOINTS.BOOKINGS}${id}/decline/`,
-      { method: "PATCH" },
+      { method: "PATCH", data: { notes: payload.notes ?? "" } },
+    );
+  }
+
+  /**
+   * Issues a refund for a booking's payment.
+   * @param id Booking ID to refund.
+   */
+  async refundBooking(id: number): Promise<BookingDetailResponse> {
+    return apiClient<BookingDetailResponse>(
+      `${API_ENDPOINTS.BOOKINGS}${id}/refund/`,
+      { method: "POST" },
     );
   }
 

@@ -8,20 +8,23 @@ export type BookingStatus =
   | "cancelled"
   | "completed";
 
-/** Shape returned by the bookings API (BookingSerializer, fields="__all__"). */
-export interface BookingApiResponse {
+export type PaymentStatus = "pending" | "successful" | "failed" | "refunded";
+
+// ─── Nested payment detail (embedded in BookingDetailResponse) ─────────────
+
+/** Full payment record embedded in booking detail responses. */
+export interface BookingPaymentDetail {
   id: number;
-  vehicle: number;
-  start_date: string; // ISO date (YYYY-MM-DD)
-  end_date: string; // ISO date (YYYY-MM-DD)
-  total_price: string;
-  status: BookingStatus;
-  payment_id?: number | null;
+  amount: string;
+  currency: string;
+  status: PaymentStatus;
+  payment_method: string;
+  transaction_id: string | null;
+  stripe_session_id: string | null;
   created_at: string;
-  updated_at: string;
 }
 
-// ─── Nested detail types (read-only, returned by BookingDetailSerializer) ────
+// ─── Nested vehicle / user detail ────────────────────────────────────────────
 
 /** Lightweight vehicle summary embedded in booking detail responses. */
 export interface BookingVehicleDetail {
@@ -40,13 +43,30 @@ export interface BookingUserDetail {
   email: string;
 }
 
+// ─── Core response shapes ─────────────────────────────────────────────────────
+
+/** Shape returned by the lean write serializer (BookingSerializer). */
+export interface BookingApiResponse {
+  id: number;
+  vehicle: number;
+  start_date: string; // ISO date (YYYY-MM-DD)
+  end_date: string; // ISO date (YYYY-MM-DD)
+  total_price: string;
+  status: BookingStatus;
+  owner_notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /**
- * Rich booking response with nested vehicle and user details.
- * Used by list, retrieve, and action endpoints.
+ * Rich booking response with nested vehicle, user, and payment details.
+ * Returned by list, retrieve, approve, decline, and cancel endpoints.
  */
 export interface BookingDetailResponse extends BookingApiResponse {
   vehicle_detail: BookingVehicleDetail;
   user_detail: BookingUserDetail;
+  /** Full payment record, or null if no payment has been initiated yet. */
+  payment_detail: BookingPaymentDetail | null;
 }
 
 /** Payload accepted when creating a booking. total_price/status are server-derived. */
@@ -56,9 +76,12 @@ export interface CreateBookingPayload {
   end_date: string; // YYYY-MM-DD
 }
 
-// ─── Payment API types (private, requires auth) ──────────────────────────────
+/** Payload for approve / decline actions (notes are optional). */
+export interface BookingActionPayload {
+  notes?: string;
+}
 
-export type PaymentStatus = "pending" | "successful" | "failed" | "refunded";
+// ─── Payment API types (private, requires auth) ──────────────────────────────
 
 /** Shape returned by the payments API (PaymentSerializer, fields="__all__"). */
 export interface PaymentApiResponse {

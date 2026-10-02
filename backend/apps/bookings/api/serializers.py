@@ -14,10 +14,11 @@ class BookingVehicleSerializer(serializers.Serializer):
     cover_image = serializers.SerializerMethodField()
 
     def get_cover_image(self, obj):
-        """Return the URL of the first (cover) image, or None."""
+        """Return the Cloudinary secure URL of the first (cover) image, or None."""
         first_image = obj.images.order_by("order").first()
-        if first_image and first_image.media:
-            return first_image.media.url
+        media = getattr(first_image, "media", None) if first_image else None
+        if media:
+            return media.secure_url
         return None
 
 
@@ -28,12 +29,25 @@ class BookingUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
+class BookingPaymentSerializer(serializers.Serializer):
+    """
+    Full payment record embedded in booking detail responses.
+    Returns None if no payment has been initiated yet.
+    """
+    id = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    currency = serializers.CharField()
+    status = serializers.CharField()
+    payment_method = serializers.CharField()
+    transaction_id = serializers.CharField(allow_null=True)
+    stripe_session_id = serializers.CharField(allow_null=True)
+    created_at = serializers.DateTimeField()
+
+
 # ─── Write serializer (create / update) ──────────────────────────────────────
 
 class BookingSerializer(serializers.ModelSerializer):
 
-    # Read-only field: populated in the view after auto-creating a Payment
-    # for instant-bookings.  Will be None for legacy pending bookings.
     payment_id = serializers.SerializerMethodField()
 
     class Meta:
@@ -48,6 +62,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "end_date",
             "total_price",
             "status",
+            "owner_notes",
             "payment_id",
             "created_at",
             "updated_at",
@@ -57,6 +72,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "user",
             "total_price",
             "status",
+            "owner_notes",
             "payment_id",
             "created_at",
             "updated_at",
@@ -65,14 +81,9 @@ class BookingSerializer(serializers.ModelSerializer):
     def get_payment_id(self, obj):
         """
         Returns the payment ID if one exists for this booking.
-        This is populated for instant-confirmed bookings where a Payment
-        record is auto-created by the view.
         """
-        # Check for annotation first (set by the view on creation)
         if hasattr(obj, "_instant_payment_id"):
             return obj._instant_payment_id
-
-        # Fallback: query the related payment (for detail / list views)
         payment = getattr(obj, "payment", None)
         if payment:
             return payment.id
@@ -115,7 +126,10 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
-
+        """
+        All new bookings start as 'pending' — vehicle owners must explicitly
+        approve before payment can be initiated.
+        """
         vehicle = validated_data["vehicle"]
         start = validated_data["start_date"]
         end = validated_data["end_date"]
@@ -123,15 +137,10 @@ class BookingSerializer(serializers.ModelSerializer):
         days = (end - start).days
         total_price = vehicle.price_per_day * days
 
-        # Instant booking: if the vehicle is available, confirm immediately
-        # so the customer can proceed to payment without waiting for owner
-        # approval.  This is the industry-standard instant-book flow.
-        status = "confirmed" if vehicle.status == "available" else "pending"
-
         booking = Booking.objects.create(
             user=self.context["request"].user,
             total_price=total_price,
-            status=status,
+            status="pending",
             **validated_data,
         )
 
@@ -143,10 +152,10 @@ class BookingSerializer(serializers.ModelSerializer):
 class BookingDetailSerializer(serializers.ModelSerializer):
     """
     Rich read-only serializer used for list, retrieve, and action responses.
-    Includes nested vehicle and user detail objects so the frontend has
-    everything it needs without additional API calls.
+    Includes nested vehicle, user, and payment detail objects so the frontend
+    has everything it needs without additional API calls.
     """
-    payment_id = serializers.SerializerMethodField()
+    payment_detail = serializers.SerializerMethodField()
     vehicle_detail = BookingVehicleSerializer(source="vehicle", read_only=True)
     user_detail = BookingUserSerializer(source="user", read_only=True)
 
@@ -160,15 +169,20 @@ class BookingDetailSerializer(serializers.ModelSerializer):
             "end_date",
             "total_price",
             "status",
-            "payment_id",
+            "owner_notes",
             "vehicle_detail",
             "user_detail",
+            "payment_detail",
             "created_at",
             "updated_at",
         ]
 
-    def get_payment_id(self, obj):
+    def get_payment_detail(self, obj):
+        """
+        Returns full payment details if a payment record exists, else None.
+        Uses select_related/prefetch from the view queryset — no extra queries.
+        """
         payment = getattr(obj, "payment", None)
-        if payment:
-            return payment.id
-        return None
+        if not payment:
+            return None
+        return BookingPaymentSerializer(payment).data

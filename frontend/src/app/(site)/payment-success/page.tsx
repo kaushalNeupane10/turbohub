@@ -10,10 +10,6 @@ export const metadata = {
 /**
  * Stripe redirects here after a successful checkout:
  *   /payment-success?session_id={CHECKOUT_SESSION_ID}
- *
- * The booking is confirmed server-side by the Stripe webhook
- * (checkout.session.completed → payment.successful, booking.confirmed), so this
- * page is purely a confirmation surface — it does not mutate state.
  */
 export default function PaymentSuccessPage() {
   return (
@@ -28,8 +24,8 @@ export default function PaymentSuccessPage() {
         </h1>
         <p className="mt-3 text-text-muted">
           Thank you for your booking. Your payment has been received and your
-          rental is now <span className="font-semibold">confirmed</span>. A
-          receipt has been sent to your email.
+          rental request is now <span className="font-semibold text-warning">pending host approval</span>.
+          The owner will cross-verify vehicle availability and review your request.
         </p>
 
         <Suspense fallback={null}>

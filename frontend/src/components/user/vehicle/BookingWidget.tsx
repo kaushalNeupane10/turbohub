@@ -92,21 +92,18 @@ export default function BookingWidget({ vehicle }: BookingWidgetProps) {
     try {
       setIsRedirecting(true);
 
-      // Step 1: Create booking on backend (instantly confirmed for available vehicles)
+      // Step 1: Create booking on backend (always starts as pending)
       const booking: BookingApiResponse = await createBooking.mutateAsync({
         vehicle: vehicle.id,
         start_date: startDate,
         end_date: endDate,
       });
 
-      // Step 2: Obtain Stripe checkout session
-      let paymentId = booking.payment_id;
-
-      if (!paymentId) {
-        // Fallback: create payment record if not auto-generated
-        const payment = await paymentService.createPayment(booking.id);
-        paymentId = payment.id;
-      }
+      // Step 2: Create a payment record (owner must approve first, but we
+      // pre-create the payment so the renter can proceed to checkout once
+      // the booking is approved).
+      const payment = await paymentService.createPayment(booking.id);
+      const paymentId = payment.id;
 
       const { checkout_url } = await paymentService.createCheckoutSession(
         paymentId,
