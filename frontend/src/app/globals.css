@@ -384,5 +384,30 @@
   .text-pretty { text-wrap: pretty; }
   .bg-elevated { background-color: var(--color-bg-elevated); }
   .bg-sunken { background-color: var(--color-bg-sunken); }
+  .bg-surface { background-color: var(--color-bg-surface); }
   .shadow-brand { box-shadow: var(--shadow-brand); }
+
+  /* Responsive centered container used across admin pages */
+  .container-main {
+    width: 100%;
+    max-width: var(--container-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-main {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-main {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
 }

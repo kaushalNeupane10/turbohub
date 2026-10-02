@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
+from apps.common.permissions import is_platform_admin
+
 
 class IsOwnerOrReadOnly(BasePermission):
     """
@@ -9,14 +11,14 @@ class IsOwnerOrReadOnly(BasePermission):
     Owners:
         - Can update/delete only their own vehicles
 
-    Admin:
-        - Full access
+    Admin (role="admin" / staff / superuser):
+        - Full access to every vehicle
     """
 
     def has_object_permission(self, request, view, obj):
 
-        # Admin has full control
-        if request.user and request.user.is_staff:
+        # Platform admins have full control (role-based, not just is_staff).
+        if is_platform_admin(request.user):
             return True
 
         # Anyone can view
@@ -36,8 +38,8 @@ class IsBookingOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
 
-        # Admin access
-        if request.user and request.user.is_staff:
+        # Platform admins have full access.
+        if is_platform_admin(request.user):
             return True
 
         return obj.user == request.user

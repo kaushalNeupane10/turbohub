@@ -60,6 +60,11 @@ COOKIE_SAMESITE = "Lax"
 
 # Fetch the variable from your .env file
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET', default='')
+
+# Frontend origin — used for Stripe redirect URLs and CORS.
+# Must NOT have a trailing slash.
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:3000')
 
 # cloudinary configuration 
 cloudinary.config(

@@ -6,6 +6,10 @@ class Vehicle(models.Model):
     VEHICLE_TYPE_CHOICES = (
         ("car", "Car"),
         ("bike", "Bike"),
+        ("dirt-bike", "Dirt-Bike"),
+        ("suv", "Suv"),
+        ("electric", "Electric"),
+        ("scooter", "Scooter"),
     )
     STATUS_CHOICES = (
         ("available", "Available"),
@@ -30,7 +34,13 @@ class Vehicle(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="available"
+        default="available",
+        db_index=True,
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Manually mark this vehicle as featured on the public homepage.",
     )
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     review_count = models.PositiveIntegerField(default=0)
@@ -39,20 +49,6 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class VehicleFeature(models.Model):
-    vehicle = models.ForeignKey(
-        Vehicle,
-        on_delete=models.CASCADE,
-        related_name="features"
-    )
-    icon = models.CharField(max_length=50)
-    label = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.label
-
 
 # ADD THIS — through-table connecting Vehicle to MediaFile
 class VehicleImage(models.Model):
