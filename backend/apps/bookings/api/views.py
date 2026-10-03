@@ -6,7 +6,11 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 
 from apps.bookings.models import Booking
-from .serializers import BookingSerializer, BookingDetailSerializer
+from .serializers import (
+    BookingSerializer,
+    BookingDetailSerializer,
+    PublicBookingTrackSerializer,
+)
 from .permissions import IsBookingOwner
 
 
@@ -58,11 +62,19 @@ class BookingViewSet(viewsets.ModelViewSet):
         IsBookingOwner,
     ]
 
+    # Disable global pagination for list/retrieve — the customer-facing list
+    # returns a plain array so the frontend can use it without unwrapping.
+    # The owner_bookings action overrides this with its own paginator.
+    pagination_class = None
+
     def get_serializer_class(self):
         """
         Use the rich detail serializer for read operations (list, retrieve,
         and custom actions) and the lean write serializer for create/update.
+        Public track actions use the privacy-safe PublicBookingTrackSerializer.
         """
+        if self.action in ("track_booking", "track_booking_by_id"):
+            return PublicBookingTrackSerializer
         if self.action in (
             "list", "retrieve", "owner_bookings",
             "approve_booking", "decline_booking", "cancel_booking", "refund_booking",
@@ -78,6 +90,12 @@ class BookingViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return qs.all()
 
+        # For the customer-facing list, return ONLY bookings the user created.
+        # Vehicle owners see their incoming bookings via the separate /owner/ action.
+        if self.action == "list":
+            return qs.filter(user=user)
+
+        # For retrieve / cancel / checkout — allow both the booker and vehicle owner.
         return qs.filter(
             Q(user=user) | Q(vehicle__owner=user)
         ).distinct()
@@ -350,3 +368,75 @@ class BookingViewSet(viewsets.ModelViewSet):
         All bookings start as 'pending'.
         """
         serializer.save()
+
+    # ── Public Tracking (No login required) ───────────────────────────
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="track",
+        permission_classes=[permissions.AllowAny],
+    )
+    def track_booking(self, request):
+        """
+        Public booking lookup endpoint. No authentication required.
+        Accepts ?id= or ?booking_id= query param.
+        e.g., GET /api/bookings/track/?id=15 or ?id=TB-15 or ?id=#15
+        """
+        raw_id = request.query_params.get("id") or request.query_params.get("booking_id")
+        if not raw_id:
+            return Response(
+                {"detail": "Please provide a valid Booking ID."},
+                status=400,
+            )
+
+        clean_id = str(raw_id).upper().replace("#", "").replace("TB-", "").replace("TB", "").strip()
+        try:
+            booking_id = int(clean_id)
+        except ValueError:
+            return Response(
+                {"detail": "Invalid Booking ID format. Please enter a numeric ID (e.g. 15 or #15)."},
+                status=400,
+            )
+
+        try:
+            booking = _booking_qs().get(pk=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {"detail": f"No booking found with ID #{booking_id}."},
+                status=404,
+            )
+
+        serializer = PublicBookingTrackSerializer(booking)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="track",
+        permission_classes=[permissions.AllowAny],
+    )
+    def track_booking_by_id(self, request, pk=None):
+        """
+        Public booking lookup endpoint by path param. No authentication required.
+        e.g., GET /api/bookings/15/track/
+        """
+        clean_id = str(pk).upper().replace("#", "").replace("TB-", "").replace("TB", "").strip()
+        try:
+            booking_id = int(clean_id)
+        except ValueError:
+            return Response(
+                {"detail": "Invalid Booking ID format."},
+                status=400,
+            )
+
+        try:
+            booking = _booking_qs().get(pk=booking_id)
+        except Booking.DoesNotExist:
+            return Response(
+                {"detail": f"No booking found with ID #{booking_id}."},
+                status=404,
+            )
+
+        serializer = PublicBookingTrackSerializer(booking)
+        return Response(serializer.data)

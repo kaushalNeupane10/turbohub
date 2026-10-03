@@ -31,11 +31,13 @@ export const queryKeys = {
     topRented: ["publicVehicles", "top-rented"] as const,
   },
 
-  // ─── Booking queries (requires auth) ─────────────────────────────────────
+  // ─── Booking queries ─────────────────────────────────────────────────────
   bookings: {
     all: ["bookings"] as const,
     list: ["bookings", "list"] as const,
     detail: (id: string | number) => ["bookings", "detail", id] as const,
+    /** Unauthenticated public tracking query key. */
+    track: (id: string | number) => ["bookings", "track", String(id)] as const,
     /** Bookings on vehicles owned by the current user (admin dashboard). */
     ownerAll: ["bookings", "owner"] as const,
     owner: (params?: { page?: number; page_size?: number; status?: string; vehicle_type?: string; search?: string }) =>

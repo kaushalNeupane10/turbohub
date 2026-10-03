@@ -8,6 +8,7 @@ import {
   Info,
   Car,
   CalendarDays,
+  Search,
   LayoutDashboard,
   User,
   Settings,
@@ -30,6 +31,11 @@ export const MAIN_NAVIGATION: NavItem[] = [
     label: "Browse Vehicles",
     href: "/vehicles",
     icon: Car,
+  },
+  {
+    label: "Track Booking",
+    href: "/track",
+    icon: Search,
   },
   {
     label: "My Bookings",
@@ -96,6 +102,11 @@ export const USER_MENU: Record<UserRole, UserMenuItem[]> = {
   ],
 
   customer: [
+    {
+      label: "My Bookings",
+      href: "/bookings",
+      icon: CalendarDays,
+    },
     {
       label: "My Profile",
       href: "/profile",

@@ -186,3 +186,42 @@ class BookingDetailSerializer(serializers.ModelSerializer):
         if not payment:
             return None
         return BookingPaymentSerializer(payment).data
+
+
+# ─── Public read serializer (track booking by ID without login) ─────────────
+
+class PublicBookingTrackSerializer(serializers.ModelSerializer):
+    """
+    Publicly visible booking details for track-by-ID feature (no login required).
+    Hides user PII while returning vehicle, dates, pricing, status, owner notes, and payment status.
+    """
+    vehicle_detail = BookingVehicleSerializer(source="vehicle", read_only=True)
+    payment_status = serializers.SerializerMethodField()
+    customer_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Booking
+        fields = [
+            "id",
+            "start_date",
+            "end_date",
+            "total_price",
+            "status",
+            "owner_notes",
+            "vehicle_detail",
+            "customer_name",
+            "payment_status",
+            "created_at",
+            "updated_at",
+        ]
+
+    def get_payment_status(self, obj):
+        payment = getattr(obj, "payment", None)
+        return payment.status if payment else None
+
+    def get_customer_name(self, obj):
+        name = getattr(obj.user, "full_name", "") or "Customer"
+        parts = name.strip().split()
+        if len(parts) >= 2:
+            return f"{parts[0]} {parts[-1][0]}."
+        return name

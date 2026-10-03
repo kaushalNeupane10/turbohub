@@ -5,13 +5,14 @@
  * Flow: create booking (pending) → customer can pay instantly → owner approves or declines → owner can refund if declined.
  */
 
-import { apiClient, API_ENDPOINTS } from "@/lib/api";
+import { apiClient, publicApiClient, API_ENDPOINTS } from "@/lib/api";
 import { PaginatedResponse } from "@/types/common/pagination";
 import {
   BookingApiResponse,
   BookingActionPayload,
   BookingDetailResponse,
   CreateBookingPayload,
+  PublicBookingTrackResponse,
 } from "@/types/booking.types";
 
 /** Parameters accepted by the owner bookings paginated endpoint. */
@@ -139,6 +140,27 @@ class BookingService {
     return apiClient<BookingDetailResponse>(
       `${API_ENDPOINTS.BOOKINGS}${id}/cancel/`,
       { method: "PATCH" },
+    );
+  }
+
+  /**
+   * Tracks a booking by Booking ID without requiring authentication.
+   * Accepts ID string (e.g. "15", "#15", "TB-15") or number.
+   * Uses publicApiClient — no cookies sent, no auth-refresh loop triggered.
+   */
+  async trackBooking(
+    id: string | number,
+  ): Promise<PublicBookingTrackResponse> {
+    const cleanId = String(id)
+      .trim()
+      .replace(/^#/, "")
+      .replace(/^TB-/i, "")
+      .replace(/^TB/i, "")
+      .trim();
+
+    return publicApiClient<PublicBookingTrackResponse>(
+      `${API_ENDPOINTS.BOOKINGS}track/`,
+      { params: { id: cleanId } },
     );
   }
 }

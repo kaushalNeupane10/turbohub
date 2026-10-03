@@ -240,6 +240,49 @@ export async function apiClient<T>(
   return api(url, config);
 }
 
+// ─── Public (unauthenticated) API instance ────────────────────────────────────
+// No cookies, no auth header, no refresh interceptor.
+// Use for endpoints that are AllowAny (e.g. public booking track, public vehicles).
+
+const publicApi: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+publicApi.interceptors.response.use(
+  (response) => {
+    const data = response.data;
+    if (data?.success === false) {
+      const error: ApiError = new Error(data.message || "Something went wrong");
+      error.errors = data.errors;
+      throw error;
+    }
+    return data?.data ?? data;
+  },
+  (error: AxiosError<BackendErrorResponse>) => {
+    const responseData = error.response?.data;
+    const apiError: ApiError = new Error(
+      responseData?.message || responseData?.detail || error.message || "Network Error",
+    );
+    apiError.status = error.response?.status;
+    if (responseData) {
+      apiError.errors = normalizeErrors(responseData);
+    }
+    return Promise.reject(apiError);
+  },
+);
+
+export async function publicApiClient<T>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  return publicApi(url, config);
+}
+
 export default api;
 
 // URL BUILDER

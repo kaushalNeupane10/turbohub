@@ -101,3 +101,20 @@ export interface PaymentApiResponse {
 export interface CheckoutSessionResponse {
   checkout_url: string;
 }
+
+// ─── Public Booking Track Response (No login required) ───────────────────────
+
+export interface PublicBookingTrackResponse {
+  id: number;
+  start_date: string;
+  end_date: string;
+  total_price: string;
+  status: BookingStatus;
+  owner_notes: string;
+  customer_name: string;
+  payment_status: string | null;
+  vehicle_detail: BookingVehicleDetail;
+  created_at: string;
+  updated_at: string;
+}
+
