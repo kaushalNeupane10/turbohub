@@ -33,7 +33,15 @@ export default function ProtectedRoute({
     if (checkingForAuth) return;
 
     if (!user) {
-      router.replace("/auth/login");
+      const currentPath =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : "";
+      const loginUrl =
+        currentPath && currentPath !== "/"
+          ? `/auth/login?next=${encodeURIComponent(currentPath)}`
+          : "/auth/login";
+      router.replace(loginUrl);
       return;
     }
 
